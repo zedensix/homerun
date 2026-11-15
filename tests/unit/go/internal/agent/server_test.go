@@ -141,6 +141,36 @@ func TestBuildRoute(t *testing.T) {
 	}
 }
 
+func TestBuildRouteStreamsProgressWhenAsked(t *testing.T) {
+	docker := newFakeDocker()
+	docker.run = gitSucceeds
+	server := newTestServer(t, docker)
+	request, err := http.NewRequest(http.MethodPost, server.URL+"/v1/build",
+		strings.NewReader(`{"gitUrl":"https://github.com/o/r.git","tag":"svc:1"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	request.Header.Set("Authorization", "Bearer "+testToken)
+	request.Header.Set("Accept", "application/x-ndjson")
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = response.Body.Close() }()
+	if response.StatusCode != http.StatusOK || response.Header.Get("Content-Type") != "application/x-ndjson" {
+		t.Fatalf("got %d %q", response.StatusCode, response.Header.Get("Content-Type"))
+	}
+	raw, _ := io.ReadAll(response.Body)
+	events := strings.Split(strings.TrimSpace(string(raw)), "\n")
+	var last agent.BuildEvent
+	if err := json.Unmarshal([]byte(events[len(events)-1]), &last); err != nil || last.Result == nil || !last.Result.Success {
+		t.Fatalf("the stream ends with the result, got %q", raw)
+	}
+	if len(events) < 2 || !strings.Contains(string(raw), `"line":"Cloning`) {
+		t.Errorf("progress lines come before the result, got %q", raw)
+	}
+}
+
 func TestBuildRouteValidatesTheBody(t *testing.T) {
 	server := newTestServer(t, newFakeDocker())
 	auth := "Bearer " + testToken

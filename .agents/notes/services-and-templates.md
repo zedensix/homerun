@@ -1233,8 +1233,10 @@ there). The result is tagged with the caller's own tag (the Go worker's
 caller-supplied tag otherwise), a fresh tag every build, same "never reuse a
 name across deploys" precedent as container names. Build output streams into the
 deployment log line by line (`progress func(string)`, wired to `job.AppendLog`
-from the worker, to the agent's own process log when it isn't answering
-`/v1/build` inline). The volume and every helper container are always removed
+from the worker; on an agent, to its own process log and, when the request
+accepts `application/x-ndjson`, streamed back as `{line}` events ahead of the
+final `{result}`, which `deploy.ReadBuildStream` writes into the deployment log
+as they arrive). The volume and every helper container are always removed
 afterward (`defer`), success or failure. A SHA-pinned service never matches a
 push and is never polled.
 

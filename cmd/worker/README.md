@@ -138,7 +138,10 @@ Every route requires `Authorization: Bearer <token>` except `/v1/health` and
   QEMU installed on first use (`tonistiigi/binfmt`, pinned in
   `builder-tools.json`, one privileged container), a rootless one fails the
   build naming the unit. Returns `{success, commit?, error?}`, where a failed
-  build's `error` carries its most telling output line.
+  build's `error` carries its most telling output line. A request sent with
+  `Accept: application/x-ndjson` (what the worker sends) gets a 200 streaming
+  one JSON object per line instead: `{line}` for each progress line as it
+  happens, then `{result}` with that same result, so the deploy log fills live.
 - `GET /v1/images/save?ref=<image:tag>`, streams a local image as a
   `docker save` tarball (`application/x-tar`, 404 when the image isn't there).
   The main app `docker load`s it when a build server has no cache registry.

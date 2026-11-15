@@ -93,6 +93,14 @@ type BuildResult struct {
 	Success bool    `json:"success"`
 }
 
+// BuildEvent is one line of POST /v1/build's streamed answer, sent when the
+// request accepts application/x-ndjson: a progress Line while the build runs,
+// then one final Result.
+type BuildEvent struct {
+	Line   string       `json:"line,omitempty"`
+	Result *BuildResult `json:"result,omitempty"`
+}
+
 // Builder runs builds against one daemon.
 type Builder struct {
 	docker     Docker

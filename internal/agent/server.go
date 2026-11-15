@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -8,6 +9,8 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -86,8 +89,10 @@ func (s *Server) processesRoute(w http.ResponseWriter, _ *http.Request) error {
 	return nil
 }
 
-// build runs POST /v1/build. The whole build happens inside the request and
-// answers with one JSON result: 200 when it succeeded, 500 when it didn't.
+// build runs POST /v1/build. The whole build happens inside the request. A
+// request accepting application/x-ndjson gets every progress line as it
+// happens and the result last; any other gets one JSON result: 200 when it
+// succeeded, 500 when it didn't.
 func (s *Server) build(w http.ResponseWriter, r *http.Request) error {
 	var input BuildInput
 	if !httpapi.DecodeJSON(w, r, &input) {
@@ -96,6 +101,10 @@ func (s *Server) build(w http.ResponseWriter, r *http.Request) error {
 	if issues := validateBuildInput(input); len(issues) > 0 {
 		return httpapi.Invalid(w, "Invalid request body", issues)
 	}
+	if strings.Contains(r.Header.Get("Accept"), "application/x-ndjson") {
+		s.streamBuild(w, r, input)
+		return nil
+	}
 	result := s.builder.Build(r.Context(), input)
 	status := http.StatusOK
 	if !result.Success {
@@ -103,6 +112,33 @@ func (s *Server) build(w http.ResponseWriter, r *http.Request) error {
 	}
 	httpapi.WriteJSON(w, status, result)
 	return nil
+}
+
+// streamBuild runs the build and streams it as BuildEvents, one JSON object
+// per line, flushed as each is written. Every line also goes to this
+// process's own log.
+func (s *Server) streamBuild(w http.ResponseWriter, r *http.Request, input BuildInput) {
+	w.Header().Set("Content-Type", "application/x-ndjson")
+	w.Header().Set("Cache-Control", "no-cache, no-transform")
+	w.WriteHeader(http.StatusOK)
+	controller := http.NewResponseController(w)
+	_ = controller.SetWriteDeadline(time.Time{})
+	encoder := json.NewEncoder(w)
+	var mutex sync.Mutex
+	send := func(event BuildEvent) {
+		mutex.Lock()
+		defer mutex.Unlock()
+		_ = encoder.Encode(event)
+		_ = controller.Flush()
+	}
+	result := s.builder.BuildWithProgress(r.Context(), input, func(line string) {
+		log.Printf("[build %s] %s", input.Tag, line)
+		send(BuildEvent{Line: line})
+	})
+	if !result.Success {
+		log.Printf("[build %s] failed: %s", input.Tag, result.Error)
+	}
+	send(BuildEvent{Result: &result})
 }
 
 // saveImage streams a local image as a `docker save` tarball, for the main app

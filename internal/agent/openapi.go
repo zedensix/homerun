@@ -198,7 +198,7 @@ func openAPIDocument(baseURL string) object {
 		"openapi": "3.1.0",
 		"paths": object{
 			"/v1/build": object{"post": object{
-				"description": "Clones a git repo at a ref and builds it into a local image tagged `tag` with `buildMethod` (its Dockerfile with BuildKit by default, a Docker Bake target, or Nixpacks, Railpack, Heroku or Paketo buildpacks), using `push`'s registry as the BuildKit layer cache and pushing the image to it afterward when set.",
+				"description": "Clones a git repo at a ref and builds it into a local image tagged `tag` with `buildMethod` (its Dockerfile with BuildKit by default, a Docker Bake target, or Nixpacks, Railpack, Heroku or Paketo buildpacks), using `push`'s registry as the BuildKit layer cache and pushing the image to it afterward when set. With `Accept: application/x-ndjson` the answer is always a 200 streaming one JSON object per line: `{\"line\"}` for each progress line as it happens, then `{\"result\"}` with the build result.",
 				"requestBody": object{
 					"content":  object{"application/json": object{"schema": buildInputSchema}},
 					"required": true,

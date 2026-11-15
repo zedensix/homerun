@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -24,6 +25,7 @@ const (
 	remoteSocket     = "/var/run/docker.sock"
 	agentBuildLimit  = 15 * time.Minute
 	agentSaveTimeout = 60 * time.Minute
+	ndjson           = "application/x-ndjson"
 )
 
 var authFailure = regexp.MustCompile(`(?i)could not read (Username|Password)|Authentication failed|terminal prompts disabled`)
@@ -144,7 +146,8 @@ func (r *run) dockerBuild(ctx context.Context, docker *dockerapi.Client, socket 
 }
 
 // agentBuild builds on an agent, which also pushes to the cache registry when
-// there is one. The agent answers once, so the log gets one summary line.
+// there is one. The agent streams its progress, each line landing in the
+// deploy log as it happens, and answers with the result last.
 func (r *run) agentBuild(ctx context.Context, built resolvedImage) error {
 	build := r.spec.Image.Build
 	input := r.buildInput(built.ref())
@@ -167,13 +170,13 @@ func (r *run) agentBuild(ctx context.Context, built resolvedImage) error {
 	if err != nil {
 		return err
 	}
-	answer, err := r.agentRequest(ctx, http.MethodPost, "/v1/build", nil, bytes.NewReader(body), agentBuildLimit)
+	answer, err := r.agentRequest(ctx, http.MethodPost, "/v1/build", nil, bytes.NewReader(body), agentBuildLimit, ndjson)
 	if err != nil {
 		return err
 	}
 	defer func() { _ = answer.Close() }()
-	var result agent.BuildResult
-	if err := json.NewDecoder(answer).Decode(&result); err != nil {
+	result, err := ReadBuildStream(answer, r.progress.line)
+	if err != nil {
 		return err
 	}
 	if !result.Success {
@@ -195,10 +198,48 @@ func (r *run) agentBuild(ctx context.Context, built resolvedImage) error {
 	return nil
 }
 
+// ReadBuildStream reads an agent's streamed POST /v1/build answer, handing
+// every progress line to progress and returning the result it ends with. An
+// agent too old to stream answers with the bare result, which is returned as
+// is. A stream that ends without a result is an error, an agent that died
+// mid-build.
+func ReadBuildStream(answer io.Reader, progress func(string)) (agent.BuildResult, error) {
+	scanner := bufio.NewScanner(answer)
+	scanner.Buffer(make([]byte, 64*1024), 4*1024*1024)
+	for scanner.Scan() {
+		if len(bytes.TrimSpace(scanner.Bytes())) == 0 {
+			continue
+		}
+		var event agent.BuildEvent
+		if err := json.Unmarshal(scanner.Bytes(), &event); err != nil {
+			return agent.BuildResult{}, fmt.Errorf("The agent sent an unreadable build event : %w", err)
+		}
+		if event.Result != nil {
+			return *event.Result, nil
+		}
+		if event.Line == "" {
+			var bare struct {
+				agent.BuildResult
+				Success *bool `json:"success"`
+			}
+			if json.Unmarshal(scanner.Bytes(), &bare) == nil && bare.Success != nil {
+				bare.BuildResult.Success = *bare.Success
+				return bare.BuildResult, nil
+			}
+			continue
+		}
+		progress(event.Line)
+	}
+	if err := scanner.Err(); err != nil {
+		return agent.BuildResult{}, fmt.Errorf("The agent's build stream broke off : %w", err)
+	}
+	return agent.BuildResult{}, errors.New("The agent's build stream ended without a result. Check the agent's own log.")
+}
+
 // agentRequest sends one authenticated call to the build server's agent and
 // returns its answer's body, turning a non-2xx answer's {error} into the
 // returned error. The caller closes the body.
-func (r *run) agentRequest(ctx context.Context, method, path string, query url.Values, body io.Reader, timeout time.Duration) (io.ReadCloser, error) {
+func (r *run) agentRequest(ctx context.Context, method, path string, query url.Values, body io.Reader, timeout time.Duration, accept string) (io.ReadCloser, error) {
 	connection := r.spec.Image.Build.Server.Agent
 	base, err := url.Parse(connection.AgentURL)
 	if err != nil {
@@ -212,6 +253,9 @@ func (r *run) agentRequest(ctx context.Context, method, path string, query url.V
 	request.Header.Set("Authorization", "Bearer "+connection.Token)
 	if body != nil {
 		request.Header.Set("Content-Type", "application/json")
+	}
+	if accept != "" {
+		request.Header.Set("Accept", accept)
 	}
 	release := activity.Hold(ctx)
 	response, err := (&http.Client{Timeout: timeout}).Do(request)
@@ -278,7 +322,7 @@ func (r *run) transfer(ctx context.Context, built resolvedImage, remote *dockera
 		if remote != nil {
 			archive, err = remote.SaveImage(ctx, ref)
 		} else {
-			archive, err = r.agentRequest(ctx, http.MethodGet, "/v1/images/save", url.Values{"ref": {ref}}, nil, agentSaveTimeout)
+			archive, err = r.agentRequest(ctx, http.MethodGet, "/v1/images/save", url.Values{"ref": {ref}}, nil, agentSaveTimeout, "")
 		}
 		if err != nil {
 			return resolvedImage{}, err
