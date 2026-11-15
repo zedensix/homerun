@@ -116,7 +116,8 @@ func (s *Server) build(w http.ResponseWriter, r *http.Request) error {
 
 // streamBuild runs the build and streams it as BuildEvents, one JSON object
 // per line, flushed as each is written. Every line also goes to this
-// process's own log.
+// process's own log. Nothing is written after the result, so a log line the
+// builder reports late never touches the response once the handler returns.
 func (s *Server) streamBuild(w http.ResponseWriter, r *http.Request, input BuildInput) {
 	w.Header().Set("Content-Type", "application/x-ndjson")
 	w.Header().Set("Cache-Control", "no-cache, no-transform")
@@ -125,9 +126,14 @@ func (s *Server) streamBuild(w http.ResponseWriter, r *http.Request, input Build
 	_ = controller.SetWriteDeadline(time.Time{})
 	encoder := json.NewEncoder(w)
 	var mutex sync.Mutex
+	finished := false
 	send := func(event BuildEvent) {
 		mutex.Lock()
 		defer mutex.Unlock()
+		if finished {
+			return
+		}
+		finished = event.Result != nil
 		_ = encoder.Encode(event)
 		_ = controller.Flush()
 	}

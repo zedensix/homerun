@@ -26,6 +26,7 @@ const (
 	agentBuildLimit  = 15 * time.Minute
 	agentSaveTimeout = 60 * time.Minute
 	ndjson           = "application/x-ndjson"
+	maxBuildEvent    = 6*4*1024*1024 + 64*1024
 )
 
 var authFailure = regexp.MustCompile(`(?i)could not read (Username|Password)|Authentication failed|terminal prompts disabled`)
@@ -147,7 +148,8 @@ func (r *run) dockerBuild(ctx context.Context, docker *dockerapi.Client, socket 
 
 // agentBuild builds on an agent, which also pushes to the cache registry when
 // there is one. The agent streams its progress, each line landing in the
-// deploy log as it happens, and answers with the result last.
+// deploy log as it happens, and answers with the result last. The job counts
+// as busy until the stream ends, since a build step can stay quiet for long.
 func (r *run) agentBuild(ctx context.Context, built resolvedImage) error {
 	build := r.spec.Image.Build
 	input := r.buildInput(built.ref())
@@ -170,6 +172,8 @@ func (r *run) agentBuild(ctx context.Context, built resolvedImage) error {
 	if err != nil {
 		return err
 	}
+	release := activity.Hold(ctx)
+	defer release()
 	answer, err := r.agentRequest(ctx, http.MethodPost, "/v1/build", nil, bytes.NewReader(body), agentBuildLimit, ndjson)
 	if err != nil {
 		return err
@@ -202,10 +206,11 @@ func (r *run) agentBuild(ctx context.Context, built resolvedImage) error {
 // every progress line to progress and returning the result it ends with. An
 // agent too old to stream answers with the bare result, which is returned as
 // is. A stream that ends without a result is an error, an agent that died
-// mid-build.
+// mid-build. An event may be as long as the agent's longest log line once
+// JSON-escaped, up to six times its raw size.
 func ReadBuildStream(answer io.Reader, progress func(string)) (agent.BuildResult, error) {
 	scanner := bufio.NewScanner(answer)
-	scanner.Buffer(make([]byte, 64*1024), 4*1024*1024)
+	scanner.Buffer(make([]byte, 64*1024), maxBuildEvent)
 	for scanner.Scan() {
 		if len(bytes.TrimSpace(scanner.Bytes())) == 0 {
 			continue
