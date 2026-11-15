@@ -35,7 +35,7 @@ func TestReadBuildStreamFailsWithoutAResult(t *testing.T) {
 
 func TestReadBuildStreamTakesAnEscapedMaximumLengthLine(t *testing.T) {
 	line := strings.Repeat("<", 4*1024*1024-1)
-	encoded := `{"line":"` + strings.Repeat(`<`, len(line)) + `"}` + "\n" + `{"result":{"success":true}}` + "\n"
+	encoded := `{"line":"` + strings.Repeat(`\u003c`, len(line)) + `"}` + "\n" + `{"result":{"success":true}}` + "\n"
 	var got string
 	result, err := deploy.ReadBuildStream(strings.NewReader(encoded), func(l string) { got = l })
 	if err != nil || !result.Success || got != line {
