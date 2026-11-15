@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.80](https://github.com/zedensix/homerun/compare/v1.0.79...v1.0.80) (2026-11-15)
+
+### Features
+
+* **agent:** stream agent build progress into the deploy log (#213) ([4077b7b](https://github.com/zedensix/homerun/commit/4077b7b01c99bad79fac920ca2e15353bfc358c0))
+
 ## [1.0.79](https://github.com/zedensix/homerun/compare/v1.0.78...v1.0.79) (2026-11-13)
 
 ### Features
