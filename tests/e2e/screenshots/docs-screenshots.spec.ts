@@ -209,7 +209,7 @@ const SHOTS: Shot[] = [
 	},
 	{
 		doc: "/settings",
-		expect: /Base domain/i,
+		expect: /^Base domain$/,
 		name: "settings",
 		path: () => "/settings",
 	},
