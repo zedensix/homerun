@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.81](https://github.com/zedensix/homerun/compare/v1.0.80...v1.0.81) (2026-11-17)
+
+### Bug Fixes
+
+* hide errors cleared by a newer revision from the dashboard's Needs you card (#217) ([1f1de8b](https://github.com/zedensix/homerun/commit/1f1de8bc40a7d7f6d54840a1fffd33f6780e52d9))
+* name crash-looping containers in incidents, explain failed swarm rollouts, follow redeploys live ([b4ae64b](https://github.com/zedensix/homerun/commit/b4ae64b7fc039574b62d919596e45cdde5f4db8d))
+
+### Documentation
+
+* drop "rollout" from the deploy page so Vale passes ([b35a823](https://github.com/zedensix/homerun/commit/b35a8237c2c334530a5b5f053a30db33e0a26b9d))
+
 ## [1.0.80](https://github.com/zedensix/homerun/compare/v1.0.79...v1.0.80) (2026-11-15)
 
 ### Features

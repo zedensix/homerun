@@ -3,15 +3,18 @@ import {
 	count,
 	desc,
 	eq,
+	getTableColumns,
 	gt,
 	inArray,
 	isNotNull,
+	isNull,
 	lt,
 	lte,
+	or,
 } from "drizzle-orm";
 
 import { db } from "#lib/server/db/lib.js";
-import { type AppLog, appLog } from "#lib/server/db/schema.js";
+import { type AppLog, appLog, service } from "#lib/server/db/schema.js";
 
 import { BaseDTO } from "./base-dto";
 
@@ -90,19 +93,24 @@ export class AppLogDTO extends BaseDTO<AppLog> {
 		return rows.map((row) => new AppLogDTO(row));
 	}
 
-	/** The newest error-level lines that name a service, logged after `since`: the dashboard's Alerts lane. */
+	/** The newest error-level lines that name an existing service, logged after `since` and after that service's last error dismissal: the dashboard's Alerts lane. */
 	static async listServiceErrorsSince(
 		since: Date,
 		limit: number,
 	): Promise<AppLogDTO[]> {
 		const rows = await db
-			.select()
+			.select(getTableColumns(appLog))
 			.from(appLog)
+			.innerJoin(service, eq(service.id, appLog.serviceId))
 			.where(
 				and(
 					eq(appLog.level, "error"),
 					isNotNull(appLog.serviceId),
 					gt(appLog.createdAt, since),
+					or(
+						isNull(service.errorsDismissedAt),
+						gt(appLog.createdAt, service.errorsDismissedAt),
+					),
 				),
 			)
 			.orderBy(desc(appLog.createdAt))

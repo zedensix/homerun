@@ -7,7 +7,9 @@ import {
 	getTableColumns,
 	gt,
 	inArray,
+	isNull,
 	lt,
+	or,
 	type SQL,
 	sql,
 } from "drizzle-orm";
@@ -21,6 +23,7 @@ import {
 	errorEvent,
 	type ErrorIssue,
 	errorIssue,
+	service,
 } from "#lib/server/db/schema.js";
 import {
 	type ListQuery,
@@ -51,18 +54,23 @@ export class ErrorIssueDTO extends BaseDTO<ErrorIssue> {
 		return this.row.id;
 	}
 
-	/** Unresolved issues of any service seen after `since`, most recently seen first: the dashboard's Alerts lane. */
+	/** Unresolved issues of any existing service seen after `since` and after that service's last error dismissal, most recently seen first: the dashboard's Alerts lane. */
 	static async listOpenSeenSince(
 		since: Date,
 		limit: number,
 	): Promise<ErrorIssue[]> {
 		return await db
-			.select()
+			.select(getTableColumns(errorIssue))
 			.from(errorIssue)
+			.innerJoin(service, eq(service.id, errorIssue.serviceId))
 			.where(
 				and(
 					eq(errorIssue.status, "unresolved"),
 					gt(errorIssue.lastSeen, since),
+					or(
+						isNull(service.errorsDismissedAt),
+						gt(errorIssue.lastSeen, service.errorsDismissedAt),
+					),
 				),
 			)
 			.orderBy(desc(errorIssue.lastSeen))
