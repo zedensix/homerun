@@ -29,7 +29,7 @@ settings, and deploys `main` to it. Its environment variables are the service's,
 with the service's own hostnames in them (an `ORIGIN`, a public URL) pointed at
 the canary's, refreshed on every canary deploy. **Canary environment overrides**
 on the same section set variables on the canary over that (`{branch}` and
-`{slug}` are filled in), and unticking **Start from this service's environment
+`{slug}` are filled in), and clearing **Start from this service's environment
 variables** gives the canary only the overrides. From now on:
 
 | You push                    | Homerun deploys                         |
