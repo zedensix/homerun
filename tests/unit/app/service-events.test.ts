@@ -146,3 +146,15 @@ describe("serviceChanges", () => {
 		expect(event.summary).toBe("Changed auto rollback, image, name and 1 more");
 	});
 });
+
+describe("canary environment overrides", () => {
+	test("name the change without printing a key or a value", () => {
+		const [event] = serviceChanges(
+			{ channelEnvOverrides: {} },
+			{ channelEnvOverrides: { TOKEN: "s3cr3t" } },
+		);
+		expect(event?.detail).toEqual(["Canary environment overrides changed"]);
+		expect(JSON.stringify(event)).not.toContain("s3cr3t");
+		expect(JSON.stringify(event)).not.toContain("TOKEN");
+	});
+});

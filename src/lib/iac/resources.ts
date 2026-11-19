@@ -213,7 +213,7 @@ const serviceAttributes: IacAttribute[] = [
 		description:
 			"Probe each pull request preview's uptime. Applied when a preview is created or redeployed.",
 	}),
-	attr("previewEnvOverrides", "stringMap"),
+	attr("previewEnvOverrides", "stringMap", { sensitive: true }),
 	attr("previewCopyVolumes", "bool", off),
 	attr("previewReportGithub", "bool", on),
 	attr("previewDefaultDomain", "bool", on),
@@ -228,7 +228,7 @@ const serviceAttributes: IacAttribute[] = [
 	attr("channelTagPattern", "string", { default: "v*" }),
 	attr("channelCanaryDomain", "string"),
 	attr("channelInheritEnv", "bool", on),
-	attr("channelEnvOverrides", "stringMap"),
+	attr("channelEnvOverrides", "stringMap", { sensitive: true }),
 	attr("environmentName", "string"),
 	attr("autoRollback", "bool", off),
 	attr("uptimeEnabled", "bool"),

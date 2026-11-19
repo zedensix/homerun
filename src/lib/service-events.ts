@@ -62,7 +62,11 @@ const FIELDS: Record<string, FieldSpec> = {
 	category: field("config", "Category"),
 	channelBranch: field("config", "Release channel branch"),
 	channelCanaryDomain: field("config", "Canary domain"),
-	channelEnvOverrides: field("config", "Canary environment overrides"),
+	channelEnvOverrides: field(
+		"config",
+		"Canary environment overrides",
+		"changed",
+	),
 	channelInheritEnv: field("config", "Canary inherits environment"),
 	channelsEnabled: field("config", "Release channels"),
 	channelTagPattern: field("config", "Release tag pattern"),

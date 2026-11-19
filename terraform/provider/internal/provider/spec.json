@@ -783,7 +783,8 @@
 				{
 					"kind": "stringMap",
 					"name": "previewEnvOverrides",
-					"tf": "preview_env_overrides"
+					"tf": "preview_env_overrides",
+					"sensitive": true
 				},
 				{
 					"kind": "bool",
@@ -870,7 +871,8 @@
 				{
 					"kind": "stringMap",
 					"name": "channelEnvOverrides",
-					"tf": "channel_env_overrides"
+					"tf": "channel_env_overrides",
+					"sensitive": true
 				},
 				{
 					"kind": "string",
