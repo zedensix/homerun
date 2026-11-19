@@ -3,7 +3,6 @@ import { error, fail } from "@sveltejs/kit";
 import { config, serviceDomain } from "#lib/config.js";
 import { ServiceDTO } from "#lib/dto/service-dto.js";
 import { StackDTO } from "#lib/dto/stack-dto.js";
-import { parseDotEnv } from "#lib/env-parse.js";
 import { Logger } from "#lib/logger.js";
 import { can } from "#lib/permissions.js";
 import {
@@ -16,6 +15,7 @@ import {
 	loginWallOptions,
 } from "#lib/server/login-wall-options.js";
 import { redirectToSignIn } from "#lib/server/sign-in-redirect.js";
+import { parseEnvOverrides } from "#lib/server/validation/env-overrides.js";
 import {
 	defaultHostname,
 	previewDomainTemplateProblem,
@@ -137,6 +137,15 @@ export const actions = {
 				values,
 			});
 		}
+		const overrides = parseEnvOverrides(
+			String(formData.get("previewEnvOverrides") ?? ""),
+		);
+		if ("error" in overrides) {
+			return fail(400, {
+				errors: { previewEnvOverrides: [overrides.error] },
+				values,
+			});
+		}
 		if (!(template || previewDefaultDomain)) {
 			return fail(400, {
 				errors: {
@@ -156,11 +165,7 @@ export const actions = {
 				previewCopyVolumes: formData.get("previewCopyVolumes") === "on",
 				previewDefaultDomain,
 				previewDomainTemplate: template || null,
-				previewEnvOverrides: Object.fromEntries(
-					parseDotEnv(String(formData.get("previewEnvOverrides") ?? "")).map(
-						(row) => [row.key, row.value],
-					),
-				),
+				previewEnvOverrides: overrides.overrides,
 				previewInheritEnv: formData.get("previewInheritEnv") === "on",
 				previewUptimeEnabled: formData.get("previewUptimeEnabled") === "on",
 				previewsEnabled,
