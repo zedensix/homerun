@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.82](https://github.com/zedensix/homerun/compare/v1.0.81...v1.0.82) (2026-11-19)
+
+### Features
+
+* **channels:** canary env inherits like previews, with hostname rewrite and overrides (#219) ([06ad7df](https://github.com/zedensix/homerun/commit/06ad7df6f51c43de63ca0f1caa1c8dcd1b900390))
+
 ## [1.0.81](https://github.com/zedensix/homerun/compare/v1.0.80...v1.0.81) (2026-11-17)
 
 ### Bug Fixes
