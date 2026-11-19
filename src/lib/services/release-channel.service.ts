@@ -60,6 +60,18 @@ export class ReleaseChannelError extends Error {
 	override name = "ReleaseChannelError";
 }
 
+/** Whether two env maps hold the same keys and values, whatever their order. */
+function sameEnv(
+	a: Record<string, string>,
+	b: Record<string, string>,
+): boolean {
+	const keys = Object.keys(a);
+	return (
+		keys.length === Object.keys(b).length &&
+		keys.every((key) => Object.hasOwn(b, key) && a[key] === b[key])
+	);
+}
+
 /** The domain columns a canary gets from its parent's canary domain: that domain when set, else only its default hostname. */
 /** The parent's settings a canary mirrors: a preview's, without the preview-only uptime choice, so the canary keeps its own probes. */
 function canarySettings(parent: ServiceDTO) {
@@ -179,8 +191,7 @@ class ReleaseChannelServiceClass {
 			existing.gitRef !== branch ||
 			before.channelCanaryDomain !== canaryDomain ||
 			before.channelInheritEnv !== after.channelInheritEnv ||
-			JSON.stringify(before.channelEnvOverrides) !==
-				JSON.stringify(after.channelEnvOverrides)
+			!sameEnv(before.channelEnvOverrides, after.channelEnvOverrides)
 		) {
 			await this.deployCanary(parent, { trigger: "manual", userId });
 		}
@@ -310,15 +321,19 @@ class ReleaseChannelServiceClass {
 
 	/**
 	 * The canary's env: the parent's with its hostnames pointed at the
-	 * canary's (unless it starts empty), then the channel overrides.
+	 * canary's (unless it starts empty), then the channel overrides. An
+	 * existing canary keeps the slug and stack it was created with, even
+	 * after the parent is renamed, so its own identity names its hostname.
 	 */
 	async #canaryEnv(
 		parent: ServiceDTO,
 		branch: string,
+		existing: ServiceDTO | null,
 	): Promise<Record<string, string>> {
 		const row = parent.toJSON();
-		const stack = parent.stackId ? await StackDTO.get(parent.stackId) : null;
-		const slug = canarySlug(parent.slug);
+		const stackId = existing ? existing.stackId : parent.stackId;
+		const stack = stackId ? await StackDTO.get(stackId) : null;
+		const slug = existing?.slug ?? canarySlug(parent.slug);
 		return await derivedEnv(
 			parent,
 			row.channelCanaryDomain ??
@@ -336,8 +351,8 @@ class ReleaseChannelServiceClass {
 		const row = parent.toJSON();
 		const branch = row.channelBranch || parent.gitRef || "main";
 		const domains = canaryDomains(row.channelCanaryDomain);
-		const envVars = await this.#canaryEnv(parent, branch);
 		const existing = await ServiceGitDTO.getCanary(parent.id);
+		const envVars = await this.#canaryEnv(parent, branch, existing);
 		if (existing) {
 			const stack = parent.stackId ? await StackDTO.get(parent.stackId) : null;
 			const previous = serviceHostnames(

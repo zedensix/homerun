@@ -12,6 +12,7 @@ import {
 	SCALE_TO_ZERO_MAX_MINUTES,
 	SCALE_TO_ZERO_MIN_MINUTES,
 } from "#lib/scale-to-zero.js";
+import { envOverrideMap } from "#lib/server/validation/env-overrides.js";
 import { environmentNameField } from "#lib/server/validation/environment-name.js";
 import { isDomainEntry, normalizeDomain } from "#lib/service-domains.js";
 import { isRunAsUser } from "#lib/service-runtime.js";
@@ -137,8 +138,7 @@ const serviceSettingsFields = {
 	category: z.string().nullable().optional(),
 	channelBranch: z.string().trim().nullable().optional(),
 	channelCanaryDomain: z.string().trim().toLowerCase().nullable().optional(),
-	channelEnvOverrides: z
-		.record(z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/), z.string())
+	channelEnvOverrides: envOverrideMap
 		.optional()
 		.describe(
 			"Environment variables set on the release channel canary over what it inherited; {branch} and {slug} are filled in.",
@@ -366,8 +366,7 @@ export const updateServiceApiBody = z.object({
 		.describe(
 			"Whether pull request previews start from this service's environment variables.",
 		),
-	previewEnvOverrides: z
-		.record(z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/), z.string())
+	previewEnvOverrides: envOverrideMap
 		.optional()
 		.describe(
 			"Environment variables set on every preview over what it inherited; {pr}, {branch} and {slug} are filled in.",

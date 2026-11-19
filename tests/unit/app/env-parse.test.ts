@@ -3,6 +3,7 @@ import { describe, expect, test } from "bun:test";
 import {
 	envEditorRows,
 	envRowKeep,
+	formatDotEnvValue,
 	mergeEnvRows,
 	type ParsedEnvVar,
 	parseDotEnv,
@@ -163,5 +164,26 @@ describe("the env editor's rows", () => {
 			secret: true,
 			value: "UTC",
 		});
+	});
+});
+
+describe("formatDotEnvValue", () => {
+	test("round-trips values parseDotEnv would trim or unquote", () => {
+		for (const value of [
+			"plain",
+			"",
+			" padded ",
+			'"quoted"',
+			"'single'",
+			'a"b',
+		]) {
+			expect(parseDotEnv(`K=${formatDotEnvValue(value)}`)).toEqual([
+				{ key: "K", value },
+			]);
+		}
+	});
+
+	test("leaves an ordinary value bare", () => {
+		expect(formatDotEnvValue("postgres://db/app")).toBe("postgres://db/app");
 	});
 });

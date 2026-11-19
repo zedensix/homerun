@@ -14,6 +14,7 @@
 	import PanelHeader from "#lib/components/panel-header.svelte";
 	import SaveButton from "#lib/components/save-button.svelte";
 	import StatusBadge from "#lib/components/status-badge.svelte";
+	import { formatDotEnvValue } from "#lib/env-parse.js";
 	import { canarySlug } from "#lib/release-channels.js";
 	import { title } from "#lib/store/title.js";
 	import { enhanceToast } from "#lib/toast.js";
@@ -33,7 +34,7 @@
 			channelBranch: channels.branch ?? svc.gitRef ?? "main",
 			channelCanaryDomain: channels.canaryDomain ?? "",
 			channelEnvOverrides: Object.entries(channels.envOverrides)
-				.map(([key, value]) => `${key}=${value}`)
+				.map(([key, value]) => `${key}=${formatDotEnvValue(value)}`)
 				.join("\n"),
 			channelInheritEnv: channels.inheritEnv ? "on" : "",
 			channelTagPattern: channels.tagPattern,

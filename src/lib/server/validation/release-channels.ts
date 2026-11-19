@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { envOverrideMap } from "#lib/server/validation/env-overrides.js";
+
 export const releaseChannelsApiBody = z.object({
 	branch: z
 		.string()
@@ -23,8 +25,7 @@ export const releaseChannelsApiBody = z.object({
 		.describe(
 			"Turn release channels on or off. Off deletes the canary service.",
 		),
-	envOverrides: z
-		.record(z.string().regex(/^[A-Za-z_][A-Za-z0-9_]*$/), z.string())
+	envOverrides: envOverrideMap
 		.optional()
 		.describe(
 			"Environment variables set on the canary over what it inherited; {branch} and {slug} are filled in. Replaces the current set; omit to keep it.",

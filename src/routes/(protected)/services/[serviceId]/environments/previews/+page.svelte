@@ -20,6 +20,7 @@
 	import PanelHeader from "#lib/components/panel-header.svelte";
 	import SaveButton from "#lib/components/save-button.svelte";
 	import StatusBadge from "#lib/components/status-badge.svelte";
+	import { formatDotEnvValue } from "#lib/env-parse.js";
 	import { title } from "#lib/store/title.js";
 	import { enhanceToast } from "#lib/toast.js";
 
@@ -41,7 +42,7 @@
 			previewBranchExclude: svc.previewBranchExclude.join("\n"),
 			previewCopyVolumes: svc.previewCopyVolumes ? "on" : "",
 			previewEnvOverrides: Object.entries(svc.previewEnvOverrides)
-				.map(([key, value]) => `${key}=${value}`)
+				.map(([key, value]) => `${key}=${formatDotEnvValue(value)}`)
 				.join("\n"),
 			previewInheritEnv: svc.previewInheritEnv ? "on" : "",
 			previewUptimeEnabled: svc.previewUptimeEnabled ? "on" : "",

@@ -258,3 +258,20 @@ describe("service settings fields", () => {
 		);
 	});
 });
+
+describe("env override maps", () => {
+	test("reject a line break or a NUL in a value, keep empty values", () => {
+		for (const field of ["channelEnvOverrides", "previewEnvOverrides"]) {
+			expect(
+				updateServiceApiBody.safeParse({ [field]: { A: "", B: "x" } }).success,
+			).toBe(true);
+			for (const value of ["a\nb", "a\rb", "a\u0000b"]) {
+				const result = updateServiceApiBody.safeParse({
+					[field]: { A: value },
+				});
+				expect(result.success).toBe(false);
+				expect(issuePaths(result)).toEqual([`${field}.A`]);
+			}
+		}
+	});
+});

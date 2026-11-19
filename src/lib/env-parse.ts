@@ -12,6 +12,17 @@ export interface ParsedEnvVar {
 
 const KEY_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
+/**
+ * `value` as it goes after `KEY=` in `.env` text so `parseDotEnv` reads it
+ * back unchanged: wrapped in double quotes when the parser would otherwise
+ * trim its surrounding whitespace or strip quotes it starts and ends with.
+ */
+export function formatDotEnvValue(value: string): string {
+	return value !== value.trim() || unquote(value) !== value
+		? `"${value}"`
+		: value;
+}
+
 /** Strips one layer of matching single/double quotes, if present. */
 function unquote(value: string): string {
 	if (value.length >= 2) {

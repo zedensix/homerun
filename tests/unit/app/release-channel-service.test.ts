@@ -268,6 +268,25 @@ describe("ReleaseChannelService.configure", () => {
 		expect(enqueued.map((e) => e.svc.id)).toEqual(["canary"]);
 	});
 
+	test("overrides resent in another order don't redeploy the canary", async () => {
+		canary = fakeService({
+			dnsResolvable: false,
+			gitRef: "main",
+			id: "canary",
+		}).svc;
+		const { svc } = fakeService({
+			channelBranch: "main",
+			channelEnvOverrides: { A: "1", B: "2" },
+			channelsEnabled: true,
+		});
+		await ReleaseChannelService.configure(
+			svc,
+			{ enabled: true, envOverrides: { B: "2", A: "1" } },
+			"u1",
+		);
+		expect(enqueued).toHaveLength(0);
+	});
+
 	test("an unchanged configuration doesn't redeploy the canary", async () => {
 		canary = fakeService({ gitRef: "main", id: "canary" }).svc;
 		const { svc } = fakeService({
@@ -313,7 +332,11 @@ describe("ReleaseChannelService deploys", () => {
 	});
 
 	test("points the stable service's hostnames in its env at the canary, overrides on top", async () => {
-		const existing = fakeService({ dnsResolvable: false, id: "canary" });
+		const existing = fakeService({
+			dnsResolvable: false,
+			id: "canary",
+			slug: "web-canary",
+		});
 		canary = existing.svc;
 		const { svc } = fakeService({
 			channelCanaryDomain: "canary.app.example.org",
@@ -338,6 +361,33 @@ describe("ReleaseChannelService deploys", () => {
 				RELEASE: "web-canary@main",
 				SECRET: "kept",
 			},
+		});
+	});
+
+	test("rewrites a path-routed domain's host and keeps the canary's own slug after a rename", async () => {
+		const existing = fakeService({
+			dnsResolvable: false,
+			id: "canary",
+			slug: "web-canary",
+			stackId: "s1",
+		});
+		canary = existing.svc;
+		const { svc } = fakeService({
+			channelsEnabled: true,
+			defaultDomainEnabled: false,
+			dnsResolvable: false,
+			domains: ["app.example.org/api"],
+			envVars: { API: "https://app.example.org/api/v1" },
+			primaryDomain: "app.example.org/api",
+			slug: "api",
+			stackId: "s1",
+		});
+		await ReleaseChannelService.deployCanary(svc, {
+			trigger: "push",
+			userId: "u1",
+		});
+		expect(existing.updates[0]).toMatchObject({
+			envVars: { API: "https://stk-web-canary.example.com/api/v1" },
 		});
 	});
 

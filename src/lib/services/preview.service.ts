@@ -12,6 +12,7 @@ import { invalidateGatedService } from "#lib/server/gated-service-cache.js";
 import { serviceDomainConflicts } from "#lib/server/hostname-owner.js";
 import {
 	defaultHostname,
+	domainHosts,
 	primaryHostname,
 	renderPreviewDomain,
 	rewriteHostnames,
@@ -124,7 +125,9 @@ export async function derivedEnv(
 	const inherited = options.inherit
 		? rewriteHostnames(
 				parent.envVars ?? {},
-				serviceHostnames(parent.toJSON(), stack?.slug, serviceDomain()),
+				domainHosts(
+					serviceHostnames(parent.toJSON(), stack?.slug, serviceDomain()),
+				),
 				host,
 			)
 		: {};
