@@ -11,7 +11,7 @@ import {
 	serviceEnvironmentApiBody,
 	updateServiceEnvironmentApiBody,
 } from "#lib/server/validation/api-resources.js";
-import { releaseChannelsApiBody } from "#lib/server/validation/api.js";
+import { releaseChannelsApiBody } from "#lib/server/validation/release-channels.js";
 
 /** Registers the tools over a service's long-lived copies: its environments (staging, demo...) and its release channels' canary. */
 export function registerEnvironmentTools(

@@ -862,6 +862,17 @@
 					"tf": "channel_canary_domain"
 				},
 				{
+					"kind": "bool",
+					"name": "channelInheritEnv",
+					"tf": "channel_inherit_env",
+					"default": true
+				},
+				{
+					"kind": "stringMap",
+					"name": "channelEnvOverrides",
+					"tf": "channel_env_overrides"
+				},
+				{
 					"kind": "string",
 					"name": "environmentName",
 					"tf": "environment_name"

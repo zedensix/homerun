@@ -16515,6 +16515,10 @@ export interface operations {
 						channelBranch: string | null;
 						channelCanary: boolean;
 						channelCanaryDomain: string | null;
+						channelEnvOverrides: {
+							[key: string]: string;
+						};
+						channelInheritEnv: boolean;
 						channelTagPattern: string;
 						channelsEnabled: boolean;
 						command: string[] | null;
@@ -16795,6 +16799,12 @@ export interface operations {
 							category?: string | null;
 							channelBranch?: string | null;
 							channelCanaryDomain?: string | null;
+							/** @description Environment variables set on the release channel canary over what it inherited; {branch} and {slug} are filled in. */
+							channelEnvOverrides?: {
+								[key: string]: string;
+							};
+							/** @description Whether the release channel canary starts from this service's environment variables, with this service's hostnames pointed at the canary. */
+							channelInheritEnv?: boolean;
 							channelTagPattern?: string;
 							/** @description Release channels: a canary service deployed from channelBranch, the service itself from tags matching channelTagPattern. */
 							channelsEnabled?: boolean;
@@ -17011,6 +17021,12 @@ export interface operations {
 							category?: string | null;
 							channelBranch?: string | null;
 							channelCanaryDomain?: string | null;
+							/** @description Environment variables set on the release channel canary over what it inherited; {branch} and {slug} are filled in. */
+							channelEnvOverrides?: {
+								[key: string]: string;
+							};
+							/** @description Whether the release channel canary starts from this service's environment variables, with this service's hostnames pointed at the canary. */
+							channelInheritEnv?: boolean;
 							channelTagPattern?: string;
 							/** @description Release channels: a canary service deployed from channelBranch, the service itself from tags matching channelTagPattern. */
 							channelsEnabled?: boolean;
@@ -17219,6 +17235,10 @@ export interface operations {
 						channelBranch: string | null;
 						channelCanary: boolean;
 						channelCanaryDomain: string | null;
+						channelEnvOverrides: {
+							[key: string]: string;
+						};
+						channelInheritEnv: boolean;
 						channelTagPattern: string;
 						channelsEnabled: boolean;
 						command: string[] | null;
@@ -17542,6 +17562,10 @@ export interface operations {
 						channelBranch: string | null;
 						channelCanary: boolean;
 						channelCanaryDomain: string | null;
+						channelEnvOverrides: {
+							[key: string]: string;
+						};
+						channelInheritEnv: boolean;
 						channelTagPattern: string;
 						channelsEnabled: boolean;
 						command: string[] | null;
@@ -17904,6 +17928,12 @@ export interface operations {
 					category?: string | null;
 					channelBranch?: string | null;
 					channelCanaryDomain?: string | null;
+					/** @description Environment variables set on the release channel canary over what it inherited; {branch} and {slug} are filled in. */
+					channelEnvOverrides?: {
+						[key: string]: string;
+					};
+					/** @description Whether the release channel canary starts from this service's environment variables, with this service's hostnames pointed at the canary. */
+					channelInheritEnv?: boolean;
 					channelTagPattern?: string;
 					/** @description Release channels: a canary service deployed from channelBranch, the service itself from tags matching channelTagPattern. */
 					channelsEnabled?: boolean;
@@ -18110,6 +18140,10 @@ export interface operations {
 						channelBranch: string | null;
 						channelCanary: boolean;
 						channelCanaryDomain: string | null;
+						channelEnvOverrides: {
+							[key: string]: string;
+						};
+						channelInheritEnv: boolean;
 						channelTagPattern: string;
 						channelsEnabled: boolean;
 						command: string[] | null;
@@ -18519,6 +18553,12 @@ export interface operations {
 						} | null;
 						canaryDomain: string | null;
 						enabled: boolean;
+						/** @description Environment variables set on the canary over what it inherited, {branch} and {slug} filled in */
+						envOverrides: {
+							[key: string]: string;
+						};
+						/** @description Whether the canary starts from this service's environment variables, its hostnames pointed at the canary */
+						inheritEnv: boolean;
 						/** @description The ref the stable service (this one) builds: the last tag deployed, or its branch until the first tag */
 						stableRef: string | null;
 						/** @description Glob a pushed tag must match to deploy the stable service */
@@ -18583,6 +18623,12 @@ export interface operations {
 					canaryDomain?: string | null;
 					/** @description Turn release channels on or off. Off deletes the canary service. */
 					enabled: boolean;
+					/** @description Environment variables set on the canary over what it inherited; {branch} and {slug} are filled in. Replaces the current set; omit to keep it. */
+					envOverrides?: {
+						[key: string]: string;
+					};
+					/** @description Whether the canary starts from this service's environment variables, with this service's own hostnames in them pointed at the canary. Omit to keep the current setting. */
+					inheritEnv?: boolean;
 					/** @description Glob a pushed tag must match to deploy the stable service, e.g. v*. Defaults to the one already set. */
 					tagPattern?: string;
 				};
@@ -18617,6 +18663,12 @@ export interface operations {
 						} | null;
 						canaryDomain: string | null;
 						enabled: boolean;
+						/** @description Environment variables set on the canary over what it inherited, {branch} and {slug} filled in */
+						envOverrides: {
+							[key: string]: string;
+						};
+						/** @description Whether the canary starts from this service's environment variables, its hostnames pointed at the canary */
+						inheritEnv: boolean;
 						/** @description The ref the stable service (this one) builds: the last tag deployed, or its branch until the first tag */
 						stableRef: string | null;
 						/** @description Glob a pushed tag must match to deploy the stable service */

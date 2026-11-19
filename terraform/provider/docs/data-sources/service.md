@@ -57,6 +57,8 @@ data "homerun_service" "example" {
 - `category` (String)
 - `channel_branch` (String)
 - `channel_canary_domain` (String)
+- `channel_env_overrides` (Map of String)
+- `channel_inherit_env` (Boolean)
 - `channel_tag_pattern` (String)
 - `channels_enabled` (Boolean) Release channels: a canary built from
   channel_branch.

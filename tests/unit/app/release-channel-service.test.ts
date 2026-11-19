@@ -35,6 +35,8 @@ function fakeService(overrides: Record<string, unknown> = {}) {
 		buildSource: "git",
 		channelBranch: null,
 		channelCanaryDomain: null,
+		channelEnvOverrides: {},
+		channelInheritEnv: true,
 		channelTagPattern: "v*",
 		channelsEnabled: false,
 		currentStatus: "running",
@@ -192,6 +194,8 @@ describe("ReleaseChannelService.configure", () => {
 		expect(updates[0]).toEqual({
 			channelBranch: "main",
 			channelCanaryDomain: "canary.example.org",
+			channelEnvOverrides: {},
+			channelInheritEnv: true,
 			channelTagPattern: "rel-*",
 			channelsEnabled: true,
 		});
@@ -242,6 +246,28 @@ describe("ReleaseChannelService.configure", () => {
 		expect(enqueued.map((e) => e.svc.id)).toEqual(["canary"]);
 	});
 
+	test("changing the canary's env overrides redeploys it with them", async () => {
+		const existing = fakeService({
+			dnsResolvable: false,
+			gitRef: "main",
+			id: "canary",
+		});
+		canary = existing.svc;
+		const { svc } = fakeService({
+			channelBranch: "main",
+			channelsEnabled: true,
+		});
+		await ReleaseChannelService.configure(
+			svc,
+			{ enabled: true, envOverrides: { FLAG: "{branch}" } },
+			"u1",
+		);
+		expect(existing.updates[0]).toMatchObject({
+			envVars: { FLAG: "main" },
+		});
+		expect(enqueued.map((e) => e.svc.id)).toEqual(["canary"]);
+	});
+
 	test("an unchanged configuration doesn't redeploy the canary", async () => {
 		canary = fakeService({ gitRef: "main", id: "canary" }).svc;
 		const { svc } = fakeService({
@@ -284,6 +310,52 @@ describe("ReleaseChannelService deploys", () => {
 		});
 		expect(existing.updates[0]).toMatchObject({ gitRef: "develop" });
 		expect(existing.updates[1]).toEqual({ gitLastSeenCommit: "abc" });
+	});
+
+	test("points the stable service's hostnames in its env at the canary, overrides on top", async () => {
+		const existing = fakeService({ dnsResolvable: false, id: "canary" });
+		canary = existing.svc;
+		const { svc } = fakeService({
+			channelCanaryDomain: "canary.app.example.org",
+			channelEnvOverrides: { RELEASE: "{slug}@{branch}" },
+			channelsEnabled: true,
+			defaultDomainEnabled: false,
+			dnsResolvable: false,
+			domains: ["app.example.org"],
+			envVars: {
+				ORIGIN: "https://app.example.org",
+				SECRET: "kept",
+			},
+			primaryDomain: "app.example.org",
+		});
+		await ReleaseChannelService.deployCanary(svc, {
+			trigger: "push",
+			userId: "u1",
+		});
+		expect(existing.updates[0]).toMatchObject({
+			envVars: {
+				ORIGIN: "https://canary.app.example.org",
+				RELEASE: "web-canary@main",
+				SECRET: "kept",
+			},
+		});
+	});
+
+	test("a canary that doesn't inherit gets only its overrides", async () => {
+		const existing = fakeService({ dnsResolvable: false, id: "canary" });
+		canary = existing.svc;
+		const { svc } = fakeService({
+			channelEnvOverrides: { ONLY: "this" },
+			channelInheritEnv: false,
+			channelsEnabled: true,
+			envVars: { ORIGIN: "https://app.example.org" },
+		});
+		await ReleaseChannelService.deployCanary(svc, {
+			trigger: "push",
+			userId: "u1",
+		});
+		expect(existing.updates[0]).toMatchObject({ envVars: { ONLY: "this" } });
+		expect(existing.updates[0]?.envVars).not.toHaveProperty("ORIGIN");
 	});
 
 	test("won't create a canary over a taken slug or past capacity", async () => {
@@ -342,6 +414,8 @@ describe("ReleaseChannelService.status", () => {
 			},
 			canaryDomain: null,
 			enabled: true,
+			envOverrides: {},
+			inheritEnv: true,
 			stableRef: "main",
 			tagPattern: "v*",
 		});

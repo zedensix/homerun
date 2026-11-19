@@ -227,6 +227,8 @@ const serviceAttributes: IacAttribute[] = [
 	attr("channelBranch", "string"),
 	attr("channelTagPattern", "string", { default: "v*" }),
 	attr("channelCanaryDomain", "string"),
+	attr("channelInheritEnv", "bool", on),
+	attr("channelEnvOverrides", "stringMap"),
 	attr("environmentName", "string"),
 	attr("autoRollback", "bool", off),
 	attr("uptimeEnabled", "bool"),

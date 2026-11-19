@@ -79,6 +79,8 @@ export const serviceResponse = z.object({
 	channelBranch: z.string().nullable(),
 	channelCanary: z.boolean(),
 	channelCanaryDomain: z.string().nullable(),
+	channelEnvOverrides: z.record(z.string(), z.string()),
+	channelInheritEnv: z.boolean(),
 	channelTagPattern: z.string(),
 	channelsEnabled: z.boolean(),
 	containerId: z.string().nullable(),

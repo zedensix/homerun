@@ -372,6 +372,8 @@ export class ServiceDTO extends BaseDTO<Service> {
 			channelBranch: null,
 			channelTagPattern: "v*",
 			channelCanaryDomain: null,
+			channelEnvOverrides: {},
+			channelInheritEnv: true,
 			channelCanary: input.channelCanary ?? false,
 			environmentName: null,
 		} satisfies Partial<Service>;

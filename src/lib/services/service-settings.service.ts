@@ -123,6 +123,8 @@ type Row = ReturnType<ServiceDTO["toJSON"]>;
 const CHANNEL_FIELDS = [
 	"channelBranch",
 	"channelCanaryDomain",
+	"channelEnvOverrides",
+	"channelInheritEnv",
 	"channelTagPattern",
 	"channelsEnabled",
 ] as const;
@@ -269,6 +271,8 @@ class ServiceSettingsServiceClass {
 		const {
 			channelBranch: _branch,
 			channelCanaryDomain: _canaryDomain,
+			channelEnvOverrides: _envOverrides,
+			channelInheritEnv: _inheritEnv,
 			channelTagPattern: _tagPattern,
 			channelsEnabled: _channelsEnabled,
 			customSslCert: _cert,
@@ -634,6 +638,8 @@ class ServiceSettingsServiceClass {
 					branch: input.channelBranch,
 					canaryDomain: input.channelCanaryDomain,
 					enabled: input.channelsEnabled ?? row.channelsEnabled,
+					envOverrides: input.channelEnvOverrides,
+					inheritEnv: input.channelInheritEnv,
 					tagPattern: input.channelTagPattern,
 				},
 				actor.userId,

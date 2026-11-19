@@ -86,51 +86,69 @@ function sourceLabel(source: PreviewSource): string {
 	return source.kind === "git" ? `ref=${source.gitRef}` : `tag=${source.tag}`;
 }
 
-/** What a preview's env overrides can refer to: `{pr}`, `{branch}` and `{slug}`. */
-interface PreviewValues {
+/** What an environment's env overrides can refer to: `{pr}` (empty outside a preview), `{branch}` and `{slug}`. */
+interface OverrideValues {
 	branch: string | null;
-	pr: number;
+	pr: number | null;
 	slug: string;
 }
 
 /** An override's value with `{pr}`, `{branch}` and `{slug}` filled in. */
 export function renderEnvOverride(
 	value: string,
-	values: PreviewValues,
+	values: OverrideValues,
 ): string {
 	return value
-		.replaceAll("{pr}", String(values.pr))
+		.replaceAll("{pr}", values.pr === null ? "" : String(values.pr))
 		.replaceAll("{branch}", values.branch ?? "")
 		.replaceAll("{slug}", values.slug);
 }
 
 /**
- * A preview's env: the parent's (unless its previews start empty), where any
- * of the parent's own hostnames in a value (an `ORIGIN`, a public URL) point
- * at the preview instead so it doesn't claim to be the parent, then the
- * parent's preview overrides on top.
+ * The env of a service that runs a copy of `parent` (a preview or a
+ * release channel canary): the parent's own unless `inherit` is off, where
+ * any of the parent's hostnames in a value (an `ORIGIN`, a public URL)
+ * point at `host` instead so the copy doesn't claim to be the parent, then
+ * `overrides` on top with their placeholders filled in.
  */
-async function previewEnv(
+export async function derivedEnv(
 	parent: ServiceDTO,
-	previewHost: string | null,
-	values: PreviewValues,
+	host: string | null,
+	options: {
+		inherit: boolean;
+		overrides: Record<string, string>;
+		values: OverrideValues;
+	},
 ): Promise<Record<string, string>> {
-	const row = parent.toJSON();
 	const stack = parent.stackId ? await StackDTO.get(parent.stackId) : null;
-	const inherited = row.previewInheritEnv
+	const inherited = options.inherit
 		? rewriteHostnames(
 				parent.envVars ?? {},
-				serviceHostnames(row, stack?.slug, serviceDomain()),
-				previewHost,
+				serviceHostnames(parent.toJSON(), stack?.slug, serviceDomain()),
+				host,
 			)
 		: {};
 	const overrides = Object.fromEntries(
-		Object.entries(row.previewEnvOverrides).map(([key, value]) => [
+		Object.entries(options.overrides).map(([key, value]) => [
 			key,
-			renderEnvOverride(value, values),
+			renderEnvOverride(value, options.values),
 		]),
 	);
 	return { ...inherited, ...overrides };
+}
+
+/** A preview's env: `derivedEnv` with the parent's preview settings. */
+async function previewEnv(
+	parent: ServiceDTO,
+	previewHost: string | null,
+	values: OverrideValues,
+): Promise<Record<string, string>> {
+	const row = parent.toJSON();
+	return await derivedEnv(parent, previewHost, {
+		inherit: row.previewInheritEnv,
+		overrides: row.previewEnvOverrides,
+		values,
+	});
 }
 
 /** A Docker volume name for a preview's copy of `volumeName`. */

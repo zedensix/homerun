@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { releaseChannelsApiBody } from "#lib/server/validation/api.js";
+import { releaseChannelsApiBody } from "#lib/server/validation/release-channels.js";
 
 import type { RouteDef } from "./registry";
 import { errorResponse } from "./schemas";
@@ -33,6 +33,14 @@ export const releaseChannelsResponse = z.object({
 		}),
 	canaryDomain: z.string().nullable(),
 	enabled: z.boolean(),
+	envOverrides: z.record(z.string(), z.string()).meta({
+		description:
+			"Environment variables set on the canary over what it inherited, {branch} and {slug} filled in",
+	}),
+	inheritEnv: z.boolean().meta({
+		description:
+			"Whether the canary starts from this service's environment variables, its hostnames pointed at the canary",
+	}),
 	stableRef: z.string().nullable().meta({
 		description:
 			"The ref the stable service (this one) builds: the last tag deployed, or its branch until the first tag",

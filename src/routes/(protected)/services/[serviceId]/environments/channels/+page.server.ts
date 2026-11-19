@@ -3,6 +3,7 @@ import { error, fail } from "@sveltejs/kit";
 import { serviceDomain } from "#lib/config.js";
 import { ServiceDTO } from "#lib/dto/service-dto.js";
 import { StackDTO } from "#lib/dto/stack-dto.js";
+import { parseDotEnv } from "#lib/env-parse.js";
 import { canarySlug } from "#lib/release-channels.js";
 import { redirectToSignIn } from "#lib/server/sign-in-redirect.js";
 import { defaultHostname } from "#lib/service-domains.js";
@@ -52,6 +53,12 @@ export const actions = {
 					branch: String(formData.get("channelBranch") ?? ""),
 					canaryDomain: String(formData.get("channelCanaryDomain") ?? ""),
 					enabled: formData.get("channelsEnabled") === "on",
+					envOverrides: Object.fromEntries(
+						parseDotEnv(String(formData.get("channelEnvOverrides") ?? "")).map(
+							(row) => [row.key, row.value],
+						),
+					),
+					inheritEnv: formData.get("channelInheritEnv") === "on",
 					tagPattern: String(formData.get("channelTagPattern") ?? ""),
 				},
 				locals.user.id,

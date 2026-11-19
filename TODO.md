@@ -7,6 +7,9 @@ When done delete the entry, no bloat.
 
 ## Small
 
+- [ ] The CLI's `services channels enable` has no flags for the canary's env
+      inheritance and overrides yet; the API, MCP tool, Terraform provider and
+      Channels tab have them.
 - [ ] #113 is back on 1.0.72: a fresh git build published to a private cache
       registry reportedly fails on swarm worker nodes with "No such image". The
       typed SDK keeps `X-Registry-Auth` on service create, update, restart and

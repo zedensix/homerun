@@ -7,6 +7,7 @@ import { Logger } from "#lib/logger.js";
 import { canarySlug, tagPatternProblem } from "#lib/release-channels.js";
 import { serviceDomainConflicts } from "#lib/server/hostname-owner.js";
 import {
+	defaultHostname,
 	DOMAIN_RE,
 	primaryHostname,
 	serviceHostnames,
@@ -16,7 +17,7 @@ import type { ContainerStatus } from "#lib/types.js";
 import { CapacityService } from "./capacity.service.ts";
 import { DeploymentService } from "./deploy.service.ts";
 import { syncServiceDomainsDns } from "./dns.service.ts";
-import { mirroredSettings } from "./preview.service.ts";
+import { derivedEnv, mirroredSettings } from "./preview.service.ts";
 import { ServiceLifecycleService } from "./service-lifecycle.service.ts";
 
 const logger = new Logger("ReleaseChannels");
@@ -25,6 +26,8 @@ export interface ChannelSettings {
 	branch?: string | null;
 	canaryDomain?: string | null;
 	enabled: boolean;
+	envOverrides?: Record<string, string>;
+	inheritEnv?: boolean;
 	tagPattern?: string;
 }
 
@@ -40,6 +43,8 @@ export interface ChannelStatus {
 	} | null;
 	canaryDomain: string | null;
 	enabled: boolean;
+	envOverrides: Record<string, string>;
+	inheritEnv: boolean;
 	stableRef: string | null;
 	tagPattern: string;
 }
@@ -103,6 +108,8 @@ class ReleaseChannelServiceClass {
 				: null,
 			canaryDomain: row.channelCanaryDomain,
 			enabled: row.channelsEnabled,
+			envOverrides: row.channelEnvOverrides,
+			inheritEnv: row.channelInheritEnv,
 			stableRef: parent.gitRef,
 			tagPattern: row.channelTagPattern,
 		};
@@ -145,9 +152,12 @@ class ReleaseChannelServiceClass {
 		await parent.update({
 			channelBranch: branch,
 			channelCanaryDomain: canaryDomain,
+			channelEnvOverrides: settings.envOverrides ?? before.channelEnvOverrides,
+			channelInheritEnv: settings.inheritEnv ?? before.channelInheritEnv,
 			channelTagPattern: tagPattern,
 			channelsEnabled: settings.enabled,
 		});
+		const after = parent.toJSON();
 		logger.info(
 			`Release channels ${settings.enabled ? "configured" : "turned off"}: service=${parent.id} branch=${branch} tags=${tagPattern} canaryDomain=${canaryDomain ?? "-"} user=${userId}`,
 		);
@@ -167,7 +177,10 @@ class ReleaseChannelServiceClass {
 			!existing ||
 			!before.channelsEnabled ||
 			existing.gitRef !== branch ||
-			before.channelCanaryDomain !== canaryDomain
+			before.channelCanaryDomain !== canaryDomain ||
+			before.channelInheritEnv !== after.channelInheritEnv ||
+			JSON.stringify(before.channelEnvOverrides) !==
+				JSON.stringify(after.channelEnvOverrides)
 		) {
 			await this.deployCanary(parent, { trigger: "manual", userId });
 		}
@@ -295,11 +308,35 @@ class ReleaseChannelServiceClass {
 		}
 	}
 
-	/** The parent's canary with its mirrored settings, branch and domains brought up to date, created when missing. */
+	/**
+	 * The canary's env: the parent's with its hostnames pointed at the
+	 * canary's (unless it starts empty), then the channel overrides.
+	 */
+	async #canaryEnv(
+		parent: ServiceDTO,
+		branch: string,
+	): Promise<Record<string, string>> {
+		const row = parent.toJSON();
+		const stack = parent.stackId ? await StackDTO.get(parent.stackId) : null;
+		const slug = canarySlug(parent.slug);
+		return await derivedEnv(
+			parent,
+			row.channelCanaryDomain ??
+				defaultHostname(slug, stack?.slug, serviceDomain()),
+			{
+				inherit: row.channelInheritEnv,
+				overrides: row.channelEnvOverrides,
+				values: { branch, pr: null, slug },
+			},
+		);
+	}
+
+	/** The parent's canary with its mirrored settings, env, branch and domains brought up to date, created when missing. */
 	async #ensureCanary(parent: ServiceDTO): Promise<ServiceDTO> {
 		const row = parent.toJSON();
 		const branch = row.channelBranch || parent.gitRef || "main";
 		const domains = canaryDomains(row.channelCanaryDomain);
+		const envVars = await this.#canaryEnv(parent, branch);
 		const existing = await ServiceGitDTO.getCanary(parent.id);
 		if (existing) {
 			const stack = parent.stackId ? await StackDTO.get(parent.stackId) : null;
@@ -311,6 +348,7 @@ class ReleaseChannelServiceClass {
 			await existing.update({
 				...canarySettings(parent),
 				...domains,
+				envVars,
 				gitRef: branch,
 			});
 			const next = serviceHostnames(
@@ -341,6 +379,7 @@ class ReleaseChannelServiceClass {
 			buildSource: "git",
 			channelCanary: true,
 			domains: domains.domains,
+			envVars,
 			gitRef: branch,
 			image: parent.image,
 			name: `${parent.name} (canary)`,

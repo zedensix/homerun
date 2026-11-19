@@ -1,5 +1,5 @@
 import { ServiceDTO } from "#lib/dto/service-dto.js";
-import { releaseChannelsApiBody } from "#lib/server/validation/api.js";
+import { releaseChannelsApiBody } from "#lib/server/validation/release-channels.js";
 import { GitWebhookService } from "#lib/services/git-webhook.service.js";
 import {
 	ReleaseChannelError,

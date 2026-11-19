@@ -5,6 +5,7 @@
 	import { Button } from "@zedensix/ui/button";
 	import { Input } from "@zedensix/ui/input";
 	import { Spinner } from "@zedensix/ui/spinner";
+	import { Textarea } from "@zedensix/ui/textarea";
 	import { onMount } from "svelte";
 
 	import Alert from "#lib/components/alert.svelte";
@@ -31,12 +32,17 @@
 			: undefined) ?? {
 			channelBranch: channels.branch ?? svc.gitRef ?? "main",
 			channelCanaryDomain: channels.canaryDomain ?? "",
+			channelEnvOverrides: Object.entries(channels.envOverrides)
+				.map(([key, value]) => `${key}=${value}`)
+				.join("\n"),
+			channelInheritEnv: channels.inheritEnv ? "on" : "",
 			channelTagPattern: channels.tagPattern,
 			channelsEnabled: channels.enabled ? "on" : "",
 		},
 	);
 
 	let channelsEnabled = $derived(values.channelsEnabled === "on");
+	let channelInheritEnv = $derived(values.channelInheritEnv === "on");
 	let submitting = $state(false);
 	let deploying = $state<string | null>(null);
 </script>
@@ -96,7 +102,7 @@
 				{/if}
 
 				<CheckBox
-					helperText={`The canary is a service named ${canarySlug(svc.slug)}, mirroring this one's build, env vars and resources.`}
+					helperText={`The canary is a service named ${canarySlug(svc.slug)}, mirroring this one's build, env vars and resources, redeployed on every push to the canary branch.`}
 					id="channelsEnabled"
 					label="Enable release channels"
 					name="channelsEnabled"
@@ -148,6 +154,39 @@
 						<p class="text-text-subtle mt-1.5 text-xs">
 							Optional. Without one the canary answers at
 							{data.defaultCanaryHostname}.
+						</p>
+					</div>
+				</div>
+
+				<div
+					class="space-y-5 transition-opacity {channelsEnabled
+						? ''
+						: 'opacity-50'}"
+				>
+					<CheckBox
+						helperText="The canary gets this service's environment variables, with this service's own hostnames in them (an ORIGIN, a public URL) pointed at the canary's. Off, it starts with only the overrides below."
+						id="channelInheritEnv"
+						label="Start from this service's environment variables"
+						name="channelInheritEnv"
+						bind:checked={channelInheritEnv}
+					/>
+					<div>
+						<label class={label} for="channelEnvOverrides">
+							Canary environment overrides
+						</label>
+						<Textarea
+							class="font-mono text-xs"
+							id="channelEnvOverrides"
+							name="channelEnvOverrides"
+							placeholder={"DATABASE_URL=postgres://app@db/app_canary\nFEATURE_FLAGS=canary"}
+							rows={4}
+							value={values.channelEnvOverrides}
+						/>
+						<p class="text-text-subtle mt-1.5 text-xs">
+							One <code>KEY=value</code> per line, set on the canary over
+							whatever it inherited. <code>{"{branch}"}</code> and
+							<code>{"{slug}"}</code> are filled in. Applied on every canary deploy;
+							changing them redeploys it.
 						</p>
 					</div>
 				</div>

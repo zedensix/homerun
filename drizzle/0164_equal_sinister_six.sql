@@ -1,0 +1,2 @@
+ALTER TABLE "service" ADD COLUMN "channel_inherit_env" boolean DEFAULT true NOT NULL;--> statement-breakpoint
+ALTER TABLE "service" ADD COLUMN "channel_env_overrides" jsonb DEFAULT '{}'::jsonb NOT NULL;

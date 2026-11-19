@@ -1436,6 +1436,11 @@ export const service = pgTable(
 		channelBranch: text("channel_branch"),
 		channelTagPattern: text("channel_tag_pattern").default("v*").notNull(),
 		channelCanaryDomain: text("channel_canary_domain"),
+		channelInheritEnv: boolean("channel_inherit_env").default(true).notNull(),
+		channelEnvOverrides: jsonb("channel_env_overrides")
+			.$type<Record<string, string>>()
+			.default({})
+			.notNull(),
 		channelCanary: boolean("channel_canary").default(false).notNull(),
 		environmentName: text("environment_name"),
 		id: text("id").primaryKey(),

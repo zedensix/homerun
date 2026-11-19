@@ -152,6 +152,8 @@ export type ServiceUpdateInput = Partial<
 		| "channelBranch"
 		| "channelTagPattern"
 		| "channelCanaryDomain"
+		| "channelEnvOverrides"
+		| "channelInheritEnv"
 		| "environmentName"
 		| "healthcheckCommand"
 		| "healthcheckDisabled"
