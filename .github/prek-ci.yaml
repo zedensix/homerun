@@ -88,7 +88,7 @@ repos:
         language: golang
         language_version: 1.27.2
         additional_dependencies:
-          [github.com/suzuki-shunsuke/pinact/v5/cmd/pinact@v5.0.0]
+          [github.com/suzuki-shunsuke/pinact/v5/cmd/pinact@v5.0.2]
         files: ^\.github/workflows/.*\.ya?ml$
 
   - repo: https://github.com/hadolint/hadolint
