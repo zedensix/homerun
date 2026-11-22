@@ -37,7 +37,7 @@ fi
 if ! release_exists; then
   gh release create "$tag" --draft --prerelease --target "$SHA" \
     --title "Nightly $VERSION" \
-    --notes "Nightly build of $SHA: prek passed, nothing else ran. It may be broken. Run it with HOMERUN_VERSION=nightly."
+    --notes-file <(scripts/prerelease-notes.sh "Nightly build of $SHA: prek passed, nothing else ran. It may be broken. Run it with HOMERUN_VERSION=nightly.")
 fi
 
 bun scripts/upload-release-assets.ts "$tag" --prerelease

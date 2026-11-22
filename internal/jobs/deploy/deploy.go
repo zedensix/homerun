@@ -26,6 +26,7 @@ import (
 // Spec is what the app's prepare step resolves for one deploy.
 type Spec struct {
 	DeploymentID string         `json:"deploymentId"`
+	Dependents   []Dependent    `json:"dependents"`
 	Env          [][2]string    `json:"env"`
 	EnvFiles     []string       `json:"envFiles"`
 	Healthchecks Healthchecks   `json:"healthchecks"`
@@ -41,6 +42,13 @@ type Spec struct {
 	SocketPath   string         `json:"socketPath"`
 	Volumes      []Volume       `json:"volumes"`
 	Workload     WorkloadSpec   `json:"workload"`
+}
+
+// Dependent is a service that uses this one, through a recorded dependency or
+// an env value naming it, stopped while its Postgres data is upgraded.
+type Dependent struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // Healthchecks are the Docker Healthcheck specs a readiness check may attach:
@@ -225,6 +233,9 @@ func (e *kindError) Unwrap() error { return e.err }
 
 type run struct {
 	docker *dockerapi.Client
+	// paused is the dependents' workloads a Postgres upgrade stopped, started
+	// again once the deploy ends.
+	paused []stoppable
 	// platform is this daemon's os/arch, set when a build server has to build
 	// for it.
 	platform string
@@ -296,6 +307,7 @@ func (r *run) deploy(ctx context.Context) error {
 			return err
 		}
 	}
+	defer r.resumeDependents(ctx)
 	if err := r.upgradePostgres(ctx, resolved); err != nil {
 		return err
 	}
@@ -385,7 +397,7 @@ func (r *run) missingSeeds(ctx context.Context) ([]VolumeSeed, error) {
 // and started again before the rollout. A failed copy removes the half
 // copied volume so the next deploy tries again.
 func (r *run) seedVolumes(ctx context.Context, seeds []VolumeSeed) error {
-	running, err := r.runningWorkloads(ctx)
+	running, err := r.runningWorkloads(ctx, r.spec.ServiceID)
 	if err != nil {
 		return err
 	}
@@ -429,11 +441,11 @@ type stoppable struct {
 	stop  func(context.Context) error
 }
 
-// runningWorkloads is the service's running containers and, on a swarm
+// runningWorkloads is serviceID's running containers and, on a swarm
 // deploy, its swarm services with replicas: a daemon outside swarm mode has
 // no services and refuses to list them.
-func (r *run) runningWorkloads(ctx context.Context) ([]stoppable, error) {
-	label := serviceIDLabel + "=" + r.spec.ServiceID
+func (r *run) runningWorkloads(ctx context.Context, serviceID string) ([]stoppable, error) {
+	label := serviceIDLabel + "=" + serviceID
 	containers, err := r.docker.ListContainersByLabel(ctx, label)
 	if err != nil {
 		return nil, err

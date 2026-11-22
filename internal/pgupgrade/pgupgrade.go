@@ -176,7 +176,9 @@ func homeOf(pgdata, version string, homes []string) string {
 // image's defaults. The old cluster is kept: beside the new one when they
 // live in different directories, else moved into a homerun-pg<version>-<time>
 // directory inside it. Nothing of the old cluster is moved until the restore
-// succeeded. The service's own containers must be stopped first. It fails
+// succeeded and every table of every database holds as many rows in the new
+// cluster as it did in the old one. The service's own containers must be
+// stopped first. It fails
 // when no image of the old major can be found or pulled, or a step fails,
 // with that step's last output.
 func (p *Plan) Run(ctx context.Context, docker *dockerapi.Client, request Request, log func(string)) error {
@@ -426,6 +428,16 @@ sed -i "s/^postgres:\([^:]*\):[0-9]*:/postgres:\1:$gid:/" /etc/group
 printf 'local all all trust\n' > /tmp/pg_hba.conf
 chown postgres /tmp/pg_hba.conf
 server_options="-c listen_addresses='' -c unix_socket_directories=/tmp -c hba_file=/tmp/pg_hba.conf"
+count_query="SELECT format('SELECT %L || chr(9) || count(*) FROM %I.%I;', current_database() || '.' || n.nspname || '.' || c.relname, n.nspname, c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind = 'r' AND n.nspname NOT IN ('pg_catalog', 'information_schema') AND n.nspname NOT LIKE 'pg_toast%'"
+count_rows() {
+	as_postgres psql -X -At -h /tmp -U "$SUPERUSER" -d postgres -c "SELECT datname FROM pg_database WHERE datallowconn" > /tmp/databases
+	: > /tmp/rows
+	while IFS= read -r db; do
+		as_postgres psql -X -At -h /tmp -U "$SUPERUSER" -d "$db" -c "$count_query" > /tmp/queries
+		as_postgres psql -X -At -h /tmp -U "$SUPERUSER" -d "$db" -v ON_ERROR_STOP=1 -f /tmp/queries >> /tmp/rows
+	done < /tmp/databases
+	LC_ALL=C sort /tmp/rows > "$1"
+}
 `
 
 const dumpScript = `set -eu
@@ -438,15 +450,16 @@ rm -f "$OLD/postmaster.pid"
 as_postgres pg_ctl -D "$OLD" -w -t 3600 -l /tmp/postgres.log -o "$server_options" start || { cat /tmp/postgres.log >&2; exit 1; }
 status=0
 as_postgres pg_dumpall -h /tmp -U "$SUPERUSER" -f "$WORK/dump.sql" || status=$?
+[ "$status" -ne 0 ] || count_rows "$WORK/rows.old"
 as_postgres pg_ctl -D "$OLD" -w -t 3600 -m fast stop
-echo "Dumped $(du -h "$WORK/dump.sql" | cut -f1)"
-exit "$status"
+[ "$status" -eq 0 ] || exit "$status"
+echo "Dumped $(du -h "$WORK/dump.sql" | cut -f1), $(wc -l < "$WORK/rows.old") tables counted"
 `
 
 const restoreScript = `set -eu
 ` + asPostgres + `
 trap 'rm -rf "$WORK"' EXIT
-[ -s "$WORK/dump.sql" ] || { echo "The dump is missing" >&2; exit 1; }
+[ -s "$WORK/dump.sql" ] && [ -f "$WORK/rows.old" ] || { echo "The dump is missing" >&2; exit 1; }
 NEXT="$WORK/next"
 rm -rf "$NEXT"
 mkdir -p "$NEXT"
@@ -462,12 +475,18 @@ done
 as_postgres pg_ctl -D "$NEXT" -w -t 3600 -l /tmp/postgres.log -o "$server_options" start || { cat /tmp/postgres.log >&2; exit 1; }
 status=0
 as_postgres psql -X -q -h /tmp -U "$SUPERUSER" -d postgres -f "$WORK/dump.sql" > /dev/null 2> "$WORK/restore.log" || status=$?
+[ "$status" -ne 0 ] || count_rows "$WORK/rows.new"
 as_postgres pg_ctl -D "$NEXT" -w -t 3600 -m fast stop
 if [ "$status" -ne 0 ] || grep 'ERROR:' "$WORK/restore.log" | grep -qv "role \"$SUPERUSER\" already exists"; then
 	cat "$WORK/restore.log" >&2
 	exit 1
 fi
-echo "Restored"
+if ! cmp -s "$WORK/rows.old" "$WORK/rows.new"; then
+	echo "The restored cluster doesn't hold the same rows as the old one (database.schema.table, then its row count, old then new):" >&2
+	diff "$WORK/rows.old" "$WORK/rows.new" >&2 || true
+	exit 1
+fi
+echo "Restored, every row of the $(wc -l < "$WORK/rows.new") tables there"
 keep_old() {
 	KEEP="$OLD/homerun-pg$OLD_VERSION-$(date +%Y%m%d%H%M%S)"
 	mkdir "$KEEP"

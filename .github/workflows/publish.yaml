@@ -337,7 +337,7 @@ jobs:
           set -euo pipefail
           gh release view "v$VERSION" >/dev/null 2>&1 || gh release create "v$VERSION" --draft --prerelease --target "$SHA" \
             --title "Canary $VERSION" \
-            --notes "Canary build of $SHA. Not a stable release: run it with HOMERUN_VERSION=canary. Merge the open chore(release) PR to release it."
+            --notes-file <(scripts/prerelease-notes.sh "Canary build of $SHA. Not a stable release: run it with HOMERUN_VERSION=canary. Merge the open chore(release) PR to release it.")
           bun scripts/upload-release-assets.ts "v$VERSION" --prerelease
           gh release list --limit 100 --json tagName,isPrerelease --jq '[.[] | select(.isPrerelease and (.tagName | contains("-canary.")))] | .[5:] | .[].tagName' \
             | while read -r tag; do gh release delete "$tag" --cleanup-tag --yes || echo "::warning::Could not prune canary $tag"; done

@@ -100,7 +100,9 @@ Postgres service from `18` to `19` by changing the tag alone leaves it down.
 When a deploy's image is Postgres (the official image, or one built on it like
 `pgvector/pgvector` or `postgis/postgis`) and its volume holds a cluster from an
 older major, the deploy upgrades it before starting the new version, whether the
-tag changed through **Update now** or by hand. It stops the service, dumps the
+tag changed through **Update now** or by hand. It stops every service that uses
+the database (linked to it, or naming it in an env var) and the database itself,
+refuses to go on while any other container still mounts its volume, dumps the
 old cluster with an image of the old major (an earlier revision's, else the same
 image and variant at the old version, `postgres:18-alpine` for
 `postgres:19.0-alpine`), and restores the dump into a fresh cluster at the
@@ -109,11 +111,14 @@ one's `pg_hba.conf` and `pg_ident.conf`; `postgresql.conf` and `ALTER SYSTEM`
 settings start from the new image's defaults. The old cluster is kept: beside
 the new one (`/var/lib/postgresql/18/docker` next to
 `/var/lib/postgresql/19/docker`), or, before 18, moved into a
-`homerun-pg<version>-<time>` directory inside the data directory. Delete it once
-the new version runs fine. The service is down for the dump and restore, and the
-volume needs room for the dump and a second copy of the data. If the upgrade
-fails the service starts again on the old version, its data untouched. An update
-trial runs the same upgrade on its volume copies first.
+`homerun-pg<version>-<time>` directory inside the data directory. Nothing is
+moved until the restore holds exactly as many rows, table by table, as the old
+cluster did. Delete the old cluster once the new version runs fine. The services
+it stopped start again once the deploy ends, whatever its outcome. The service
+is down for the dump and restore, and the volume needs room for the dump and a
+second copy of the data. If the upgrade fails the service starts again on the
+old version, its data untouched. An update trial runs the same upgrade on its
+volume copies first.
 
 From 18 on the official image keeps its data in
 `/var/lib/postgresql/<major>/docker` and expects the volume at

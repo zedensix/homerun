@@ -116,6 +116,29 @@ func (c *Client) ListContainersByLabel(ctx context.Context, label string) ([]Con
 	return containers, nil
 }
 
+// ContainersMounting names the running containers that mount source, a
+// volume name or a host path.
+func (c *Client) ContainersMounting(ctx context.Context, source string) ([]string, error) {
+	listed, err := c.listContainers(ctx, false, "")
+	if err != nil {
+		return nil, err
+	}
+	var names []string
+	for _, entry := range listed {
+		for _, mount := range entry.Mounts {
+			if mount.Name == source || (mount.Name == "" && mount.Source == source) {
+				name := entry.ID[:min(len(entry.ID), 12)]
+				if len(entry.Names) > 0 {
+					name = strings.TrimPrefix(entry.Names[0], "/")
+				}
+				names = append(names, name)
+				break
+			}
+		}
+	}
+	return names, nil
+}
+
 // listContainers is the daemon's typed container list.
 func (c *Client) listContainers(ctx context.Context, all bool, label string) ([]container.Summary, error) {
 	listed, err := control(ctx, ControlTimeout, "list containers", "", func(ctx context.Context) (client.ContainerListResult, error) {

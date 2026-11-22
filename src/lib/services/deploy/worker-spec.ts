@@ -1,5 +1,6 @@
 import { config } from "#lib/config.js";
 import { DeploymentDTO } from "#lib/dto/deployment-dto.js";
+import { ServiceDependencyDTO } from "#lib/dto/service-dependency-dto.js";
 import type { ServiceDTO } from "#lib/dto/service-dto.js";
 import type { StackDTO } from "#lib/dto/stack-dto.js";
 import { RELEASE_ENV } from "#lib/error-tracking/dsn.js";
@@ -386,6 +387,22 @@ export async function previousImages(serviceId: string): Promise<string[]> {
 	];
 }
 
+/**
+ * The services that use `serviceId` (a recorded dependency, or an env value
+ * naming it), which a Postgres major upgrade stops until it's done. None for
+ * a service with no writable mount, which has no data to upgrade.
+ */
+export async function dependents(
+	serviceId: string,
+	mounts: WorkerSpecContext["mounts"],
+): Promise<{ id: string; name: string }[]> {
+	if (!mounts.some((m) => !m.mount.toJSON().readOnly)) {
+		return [];
+	}
+	const { dependedOnBy } = await ServiceDependencyDTO.describe(serviceId);
+	return dependedOnBy.map(({ id, name }) => ({ id, name }));
+}
+
 /** The release a deploy's error tracking env names up front: a rollback's commit or image, a pulled image's ref. Null for a git build, whose commit the worker fills in. */
 function knownRelease(image: ImagePlan): string | null {
 	switch (image.kind) {
@@ -421,6 +438,7 @@ export async function deployWorkerSpec(
 	);
 	const routed = svc.dnsResolvable && plan.workload.networkMode !== "host";
 	return {
+		dependents: await dependents(svc.id, mounts),
 		deploymentId: dep.id,
 		env: [
 			...(sentry?.env ?? []),
