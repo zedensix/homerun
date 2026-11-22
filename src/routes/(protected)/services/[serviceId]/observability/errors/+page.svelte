@@ -40,7 +40,7 @@
 	const { data } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Errors`));
+	onMount(() => title.set(`${data.serviceLabel} · Errors`));
 
 	const view = new ViewMode("errors");
 

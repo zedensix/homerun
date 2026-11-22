@@ -15,7 +15,7 @@
 	const svc = $derived(data.service);
 	const applied = $derived(data.applied);
 
-	onMount(() => title.set(`${svc.name} · Health`));
+	onMount(() => title.set(`${data.serviceLabel} · Health`));
 
 	const label = "block mb-1.5 text-sm font-medium text-text";
 	const errorClass = "mt-1.5 text-xs text-red-500";

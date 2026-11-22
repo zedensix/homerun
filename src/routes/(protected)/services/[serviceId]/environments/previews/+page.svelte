@@ -30,7 +30,7 @@
 	const { data, form } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Previews`));
+	onMount(() => title.set(`${data.serviceLabel} · Previews`));
 
 	const label = "block mb-1.5 text-sm font-medium text-text";
 	const errorClass = "mt-1.5 text-xs text-red-500";

@@ -11,7 +11,7 @@
 
 	const { data } = $props();
 
-	onMount(() => title.set(`${data.service.name} · Blocked IPs`));
+	onMount(() => title.set(`${data.serviceLabel} · Blocked IPs`));
 </script>
 
 <div class="space-y-6">

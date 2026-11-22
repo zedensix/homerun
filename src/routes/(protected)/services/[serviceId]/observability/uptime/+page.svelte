@@ -10,7 +10,7 @@
 
 	const { data } = $props();
 
-	onMount(() => title.set(`${data.service.name} · Uptime`));
+	onMount(() => title.set(`${data.serviceLabel} · Uptime`));
 
 	let togglingUptime = $state(false);
 	let clearing = $state(false);

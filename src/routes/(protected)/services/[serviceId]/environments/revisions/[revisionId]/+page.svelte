@@ -24,7 +24,7 @@
 		revision.imageRef ?? `${service.image}:${service.tag}`,
 	);
 
-	onMount(() => title.set(`${data.service.name} · Revision`));
+	onMount(() => title.set(`${data.serviceLabel} · Revision`));
 
 	let confirmOpen = $state(false);
 	let revisionForm = $state<HTMLFormElement | null>(null);

@@ -15,7 +15,7 @@
 
 	const { data } = $props();
 
-	onMount(() => title.set(`${data.service.name} · Logs`));
+	onMount(() => title.set(`${data.serviceLabel} · Logs`));
 
 	let resolving = $state(false);
 </script>

@@ -9,7 +9,7 @@
 	const { data, form } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Network`));
+	onMount(() => title.set(`${data.serviceLabel} · Network`));
 </script>
 
 <NetworkSection

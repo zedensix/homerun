@@ -98,3 +98,11 @@ export function getPasswordStrengthMeta(strength: number) {
  * bullets whatever the value's real length, so the mask never gives it away.
  */
 export const SECRET_MASK = "•".repeat(24);
+
+/** A service's name prefixed with its stack's ("Media / DB"), so two services both called "DB" read apart; the bare name outside a stack. */
+export function serviceLabel(
+	name: string,
+	stackName: string | null | undefined,
+): string {
+	return stackName ? `${stackName} / ${name}` : name;
+}

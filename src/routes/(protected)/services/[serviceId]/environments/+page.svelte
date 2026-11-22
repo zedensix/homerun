@@ -27,7 +27,7 @@
 		isGit ? (svc.gitRef ?? "main") : (svc.tag ?? "latest"),
 	);
 
-	onMount(() => title.set(`${svc.name} · Environments`));
+	onMount(() => title.set(`${data.serviceLabel} · Environments`));
 
 	const hostnameOf = (
 		row: Parameters<typeof primaryHostname>[0] & {

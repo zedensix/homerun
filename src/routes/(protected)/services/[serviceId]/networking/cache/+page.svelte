@@ -8,7 +8,7 @@
 	const { data } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Cache`));
+	onMount(() => title.set(`${data.serviceLabel} · Cache`));
 </script>
 
 <CacheSection available={data.httpCacheAvailable} {svc} />

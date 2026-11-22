@@ -16,7 +16,7 @@
 	const { data } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Errors board`));
+	onMount(() => title.set(`${data.serviceLabel} · Errors board`));
 
 	const COLUMNS: Record<
 		IssueStatus,

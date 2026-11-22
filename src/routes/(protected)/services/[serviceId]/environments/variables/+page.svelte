@@ -13,7 +13,7 @@
 	const { data, form } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Environment Variables`));
+	onMount(() => title.set(`${data.serviceLabel} · Environment Variables`));
 
 	let submitting = $state(false);
 	let savingEnvFiles = $state(false);

@@ -12,6 +12,7 @@ import {
 import { ErrorIssueDTO } from "#lib/dto/error-issue-dto.js";
 import { JobDTO } from "#lib/dto/job-dto.js";
 import { ServiceDTO } from "#lib/dto/service-dto.js";
+import { serviceLabel } from "#lib/formatting.js";
 import { Logger } from "#lib/logger.js";
 
 const POLL_MS = 2000;
@@ -53,9 +54,14 @@ async function recentAlerts(): Promise<ActivityAlert[]> {
 	const [issues, logs, services] = await Promise.all([
 		ErrorIssueDTO.listOpenSeenSince(since, ALERT_LIMIT),
 		AppLogDTO.listServiceErrorsSince(since, ALERT_LIMIT),
-		ServiceDTO.list(),
+		ServiceDTO.listWithStackNames(),
 	]);
-	const names = new Map(services.map((svc) => [svc.id, svc.name]));
+	const names = new Map(
+		services.map(({ service, stackName }) => [
+			service.id,
+			serviceLabel(service.name, stackName),
+		]),
+	);
 	const alerts: ActivityAlert[] = [
 		...issues.map((issue) => ({
 			at: issue.lastSeen.toISOString(),

@@ -10,7 +10,7 @@
 	const { data, form } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Automation`));
+	onMount(() => title.set(`${data.serviceLabel} · Automation`));
 </script>
 
 <div class="space-y-6">

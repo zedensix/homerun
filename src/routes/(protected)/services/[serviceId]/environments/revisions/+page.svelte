@@ -10,7 +10,7 @@
 
 	const { data } = $props();
 
-	onMount(() => title.set(`${data.service.name} · Revisions`));
+	onMount(() => title.set(`${data.serviceLabel} · Revisions`));
 
 	const HEALTH_LABELS = {
 		healthy: {

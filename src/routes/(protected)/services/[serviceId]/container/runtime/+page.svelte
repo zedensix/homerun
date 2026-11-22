@@ -14,7 +14,7 @@
 	const { data, form } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Runtime`));
+	onMount(() => title.set(`${data.serviceLabel} · Runtime`));
 
 	const values = $derived(
 		(form?.values as Record<string, string> | undefined) ?? {

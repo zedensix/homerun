@@ -40,7 +40,7 @@
 		getVolumeSizes(data.mounts.map((mount) => mount.volumeId)),
 	);
 
-	onMount(() => title.set("Storage"));
+	onMount(() => title.set(`${data.serviceLabel} · Storage`));
 
 	let newVolumeOpen = $state(false);
 	let newVolumeKind = $state<"bind" | "volume">("volume");

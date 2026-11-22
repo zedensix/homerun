@@ -33,7 +33,7 @@
 	const issue = $derived(data.issue);
 	const payload = $derived(data.payload);
 
-	onMount(() => title.set(`${svc.name} · ${data.issue.title}`));
+	onMount(() => title.set(`${data.serviceLabel} · ${data.issue.title}`));
 
 	const errorsHref = $derived(
 		resolve("/(protected)/services/[serviceId]/observability/errors", {

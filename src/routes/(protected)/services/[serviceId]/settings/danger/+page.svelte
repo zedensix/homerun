@@ -8,7 +8,7 @@
 	const { data } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Danger zone`));
+	onMount(() => title.set(`${data.serviceLabel} · Danger zone`));
 </script>
 
 <DangerZoneSection activeJobs={data.activeJobs} name={svc.name} />

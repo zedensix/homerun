@@ -8,7 +8,7 @@
 	const { data } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Log history`));
+	onMount(() => title.set(`${data.serviceLabel} · Log history`));
 </script>
 
 <LogHistoryView

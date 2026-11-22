@@ -1,6 +1,8 @@
 import { ServiceDTO } from "#lib/dto/service-dto.js";
+import { StackDTO } from "#lib/dto/stack-dto.js";
 import { TemplateDTO } from "#lib/dto/template-dto.js";
 import { UptimeCheckDTO } from "#lib/dto/uptime-check-dto.js";
+import { serviceLabel } from "#lib/formatting.js";
 import { can } from "#lib/permissions.js";
 import { describeReading } from "#lib/resource-thresholds.js";
 import { monitoringRequest } from "#lib/server/monitoring-request.js";
@@ -8,6 +10,20 @@ import { CapacityService } from "#lib/services/capacity.service.js";
 import { MonitoringService } from "#lib/services/monitoring.service.js";
 import { isProbed } from "#lib/services/uptime/uptime-probe.js";
 import { SIMPLE_FRONT_PAGE_TEMPLATES } from "#lib/ui-mode.js";
+
+/** Each service's dashboard label, its stack's name in front, keyed by service id. */
+async function serviceLabels(
+	pending: Promise<ServiceDTO[]>,
+): Promise<Map<string, string>> {
+	const [services, stacks] = await Promise.all([pending, StackDTO.list()]);
+	const stackNames = new Map(stacks.map((s) => [s.id, s.name]));
+	return new Map(
+		services.map((svc) => [
+			svc.id,
+			serviceLabel(svc.name, svc.stackId ? stackNames.get(svc.stackId) : null),
+		]),
+	);
+}
 
 /** The front page's one-click templates, in `SIMPLE_FRONT_PAGE_TEMPLATES` order, skipping any this instance doesn't have. */
 async function frontPageTemplates() {
@@ -47,11 +63,11 @@ function greeting(zone: string): string {
 
 /** One row per failing probe of a probed service, newest first : what's down, not a roll-call of what's fine. */
 async function uptimeDown(pending: Promise<ServiceDTO[]>) {
-	const [services, uptime] = await Promise.all([
+	const [services, uptime, serviceNames] = await Promise.all([
 		pending,
 		UptimeCheckDTO.latest(),
+		serviceLabels(pending),
 	]);
-	const serviceNames = new Map(services.map((svc) => [svc.id, svc.name]));
 	const probed = new Set(
 		services.filter((svc) => isProbed(svc.toJSON())).map((svc) => svc.id),
 	);
@@ -68,7 +84,10 @@ async function uptimeDown(pending: Promise<ServiceDTO[]>) {
 
 /** Every service whose update check found a newer image, with how its trial run went, newest find first. */
 async function availableUpdates(pending: Promise<ServiceDTO[]>) {
-	const services = await pending;
+	const [services, labels] = await Promise.all([
+		pending,
+		serviceLabels(pending),
+	]);
 	return services
 		.flatMap((svc) => {
 			const check = svc.toJSON().updateCheck;
@@ -80,7 +99,7 @@ async function availableUpdates(pending: Promise<ServiceDTO[]>) {
 					currentTag: svc.tag,
 					foundAt: check.available.foundAt,
 					serviceId: svc.id,
-					serviceName: svc.name,
+					serviceName: labels.get(svc.id) ?? svc.name,
 					tag: check.available.tag,
 					trialAttempts: check.trial?.attempts ?? null,
 					trialStatus: check.trial?.status ?? null,

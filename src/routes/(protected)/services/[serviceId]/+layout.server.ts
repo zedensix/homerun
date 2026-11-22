@@ -10,6 +10,7 @@ import { ServiceGitDTO } from "#lib/dto/service-git-dto.js";
 import { ServiceVolumeDTO } from "#lib/dto/service-volume-dto.js";
 import { StackDTO } from "#lib/dto/stack-dto.js";
 import { TrafficSampleDTO } from "#lib/dto/traffic-sample-dto.js";
+import { serviceLabel } from "#lib/formatting.js";
 import { serviceHostname } from "#lib/services/dns.service.js";
 import { certResolverFor } from "#lib/services/docker/cert-resolver.js";
 import { RevisionService } from "#lib/services/revision.service.js";
@@ -165,5 +166,6 @@ export const load = async ({ params, parent }) => {
 		stackSlug: stack?.slug ?? null,
 		publicScheme: config.traefik.entrypoint === "web" ? "http" : "https",
 		service: svc.toJSON(),
+		serviceLabel: serviceLabel(svc.name, stack?.name),
 	};
 };

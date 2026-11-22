@@ -15,7 +15,7 @@
 	const { data } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Traces`));
+	onMount(() => title.set(`${data.serviceLabel} · Traces`));
 
 	let saving = $state(false);
 

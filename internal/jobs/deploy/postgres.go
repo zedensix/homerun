@@ -127,10 +127,18 @@ func (r *run) resumeDependents(ctx context.Context) {
 }
 
 // isPostgres reports whether ref is a Postgres image, by the PG_MAJOR the
-// official image and the images built on it set. An image the daemon can't
-// inspect isn't.
+// official image and the images built on it set. An image not on the manager
+// yet, a swarm deploy pinned to the mirror's digest, is pulled first; one that
+// still can't be inspected isn't, and says so in the deploy log.
 func (r *run) isPostgres(ctx context.Context, ref string) bool {
 	inspected, err := r.docker.InspectImage(ctx, ref)
+	if err != nil {
+		if pullErr := r.pull(ctx, ref, r.registryAuth()); pullErr != nil {
+			r.progress.line(fmt.Sprintf("Couldn't pull %s on the manager to check whether its Postgres data needs upgrading: %s", ref, pullErr))
+			return false
+		}
+		inspected, err = r.docker.InspectImage(ctx, ref)
+	}
 	return err == nil && slices.ContainsFunc(inspected.Config.Env, func(entry string) bool {
 		return strings.HasPrefix(entry, "PG_MAJOR=")
 	})

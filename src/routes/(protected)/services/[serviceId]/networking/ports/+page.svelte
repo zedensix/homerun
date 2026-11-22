@@ -10,7 +10,7 @@
 	const { data } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Ports`));
+	onMount(() => title.set(`${data.serviceLabel} · Ports`));
 
 	const published = $derived(
 		visibleIn(data.uiMode, "service/networking#published-ports") ||

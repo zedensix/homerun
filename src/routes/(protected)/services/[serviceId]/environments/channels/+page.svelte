@@ -23,7 +23,7 @@
 	const svc = $derived(data.service);
 	const channels = $derived(data.channels);
 
-	onMount(() => title.set(`${svc.name} · Channels`));
+	onMount(() => title.set(`${data.serviceLabel} · Channels`));
 
 	const label = "block mb-1.5 text-sm font-medium text-text";
 

@@ -9,7 +9,7 @@
 	const { data } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Terminal`));
+	onMount(() => title.set(`${data.serviceLabel} · Terminal`));
 
 	let connected = $state(false);
 

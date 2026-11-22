@@ -10,7 +10,7 @@
 
 	const { data } = $props();
 
-	onMount(() => title.set(`${data.service.name} · Application errors`));
+	onMount(() => title.set(`${data.serviceLabel} · Application errors`));
 </script>
 
 <DismissedErrorsBar dismissal={data.dismissal} serviceId={data.service.id} />

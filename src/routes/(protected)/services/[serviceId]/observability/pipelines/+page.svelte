@@ -15,7 +15,7 @@
 	const svc = $derived(data.service);
 	const linked = $derived(data.linked);
 
-	onMount(() => title.set(`${svc.name} · Pipelines`));
+	onMount(() => title.set(`${data.serviceLabel} · Pipelines`));
 </script>
 
 {#if !linked}

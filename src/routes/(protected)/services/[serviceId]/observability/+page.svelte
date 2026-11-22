@@ -6,7 +6,7 @@
 
 	const { data } = $props();
 
-	onMount(() => title.set(`${data.service.name} · Monitoring`));
+	onMount(() => title.set(`${data.serviceLabel} · Monitoring`));
 </script>
 
 <MonitoringView

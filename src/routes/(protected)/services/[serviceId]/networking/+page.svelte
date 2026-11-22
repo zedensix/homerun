@@ -10,7 +10,7 @@
 	const { data } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Domains`));
+	onMount(() => title.set(`${data.serviceLabel} · Domains`));
 
 	let submitting = $state(false);
 </script>

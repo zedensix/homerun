@@ -7,7 +7,7 @@
 
 	const { data } = $props();
 
-	onMount(() => title.set(`${data.service.name} · Trace`));
+	onMount(() => title.set(`${data.serviceLabel} · Trace`));
 </script>
 
 <TraceView

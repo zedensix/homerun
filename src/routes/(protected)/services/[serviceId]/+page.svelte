@@ -27,7 +27,7 @@
 
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(svc.name));
+	onMount(() => title.set(data.serviceLabel));
 
 	const progress = useDeployProgress();
 

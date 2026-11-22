@@ -11,7 +11,7 @@
 
 	const { data } = $props();
 
-	onMount(() => title.set(`${data.service.name} · Failed deployments`));
+	onMount(() => title.set(`${data.serviceLabel} · Failed deployments`));
 
 	let expandedDeploymentId = $state<string | null>(null);
 </script>

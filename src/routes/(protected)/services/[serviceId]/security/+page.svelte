@@ -17,7 +17,7 @@
 	const { data, form } = $props();
 	const svc = $derived(data.service);
 
-	onMount(() => title.set(`${svc.name} · Security`));
+	onMount(() => title.set(`${data.serviceLabel} · Security`));
 
 	const POLL_MS = 3000;
 

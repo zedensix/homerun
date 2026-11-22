@@ -24,7 +24,7 @@
 	const svc = $derived(data.service);
 	const placement = $derived(swarmPlacementFrom(svc.swarmPlacement));
 
-	onMount(() => title.set(`${svc.name} · Compute`));
+	onMount(() => title.set(`${data.serviceLabel} · Compute`));
 
 	const label = "block mb-1.5 text-sm font-medium text-text";
 	const errorClass = "mt-1.5 text-xs text-red-500";
