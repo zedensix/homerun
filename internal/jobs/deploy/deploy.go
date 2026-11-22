@@ -182,10 +182,19 @@ type Result struct {
 	GitRef         string       `json:"gitRef,omitempty"`
 	Image          string       `json:"image,omitempty"`
 	ImageID        string       `json:"imageId,omitempty"`
+	Remounts       []Remount    `json:"remounts,omitempty"`
 	Scans          []ScanRecord `json:"scans"`
 	ServiceImage   *ImageRef    `json:"serviceImage,omitempty"`
 	SwarmServiceID string       `json:"swarmServiceId,omitempty"`
 	Tag            string       `json:"tag,omitempty"`
+}
+
+// Remount is a volume the deploy moved from one container path to another
+// (see pgupgrade), which the app saves on the service's mount.
+type Remount struct {
+	From   string `json:"from"`
+	Source string `json:"source"`
+	To     string `json:"to"`
 }
 
 // ImageRef is an image name and tag.

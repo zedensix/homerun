@@ -57,21 +57,31 @@ type Found struct {
 	Volume   Volume
 }
 
-// Plan is one upgrade to run: the cluster in OldDir, made by OldVersion,
-// restored into NewDir for NewVersion, both inside Volume.
+// Plan is what a service's Postgres data needs before Image runs: the
+// cluster in OldDir, made by OldVersion, restored into NewDir for NewVersion,
+// both inside Volume; OldVersion is empty when no upgrade is needed. When
+// Remounted is set, Volume used to be mounted there, a directory that doesn't
+// contain the new major's data directory, and must be mounted at
+// Volume.Target from now on, even when nothing is upgraded.
 type Plan struct {
 	NewDir     string
 	NewVersion string
 	OldDir     string
 	OldVersion string
+	Remounted  string
 	Volume     Volume
 }
 
-// Find inspects request.Image and the service's volumes and returns the
-// upgrade its data needs, or nil when the image isn't Postgres, no volume
-// holds an older cluster, or the new major's cluster is already there. It
-// fails when the image can't be inspected, a volume can't be read, or the old
-// cluster sits in a volume the new major's data directory isn't in.
+// Upgrades reports whether the plan restores a cluster, rather than only
+// moving a mount.
+func (p *Plan) Upgrades() bool {
+	return p.OldVersion != ""
+}
+
+// Find inspects request.Image and the service's volumes and returns what its
+// data needs (see Decide), or nil when the image isn't Postgres or nothing
+// is needed. It fails when the image can't be inspected, a volume can't be
+// read, or Decide does.
 func Find(ctx context.Context, docker *dockerapi.Client, request Request) (*Plan, error) {
 	inspected, err := docker.InspectImage(ctx, request.Image)
 	if err != nil {
@@ -93,16 +103,19 @@ func Find(ctx context.Context, docker *dockerapi.Client, request Request) (*Plan
 		}
 		found = append(found, Found{Clusters: clusters, Volume: volume})
 	}
-	return Decide(version, path.Clean(pgdata), found)
+	return Decide(version, path.Clean(pgdata), inspected.Config.Volumes, found)
 }
 
-// Decide picks the upgrade version's image needs, its data directory being
-// pgdata: none when the volume holding pgdata already has a cluster there of
-// version or newer, or no older cluster at all; otherwise the newest older
-// cluster in that volume. It fails when an older cluster sits in a volume
-// that doesn't hold pgdata, since the new major would then start an empty
-// database outside every volume.
-func Decide(version, pgdata string, found []Found) (*Plan, error) {
+// Decide picks what version's image needs, its data directory being pgdata
+// and homes the directories the image declares as volumes: nothing when the
+// volume holding pgdata already has a cluster there of version or newer, or
+// no cluster at all; otherwise the newest older cluster in that volume. A
+// volume holding a cluster but mounted where pgdata isn't (Postgres 18's
+// /var/lib/postgresql/18/docker, or the pre-18 /var/lib/postgresql/data, with
+// pgdata /var/lib/postgresql/19/docker) is moved to the home that contains
+// pgdata, since the new major would otherwise start an empty database outside
+// every volume. It fails when no home contains pgdata.
+func Decide(version, pgdata string, homes []string, found []Found) (*Plan, error) {
 	wanted, ok := parseVersion(version)
 	if !ok {
 		return nil, nil
@@ -113,14 +126,47 @@ func Decide(version, pgdata string, found []Found) (*Plan, error) {
 		}
 	}
 	for _, entry := range found {
-		if old := newestOlder(entry.Clusters, wanted); old != nil {
+		if len(entry.Clusters) == 0 {
+			continue
+		}
+		home := homeOf(pgdata, version, homes)
+		if home == "" {
 			return nil, fmt.Errorf(
-				"%s holds a Postgres %s cluster in %s, but Postgres %s keeps its data in %s, which no volume covers: mount %s at a directory that contains %s (for the official image, /var/lib/postgresql) and deploy again to upgrade it",
-				entry.Volume.Source, old.Version, old.Dir, version, pgdata, entry.Volume.Source, pgdata,
+				"%s holds a Postgres %s cluster in %s, but Postgres %s keeps its data in %s, which no volume covers: mount %s at a directory that contains %s and deploy again to upgrade it",
+				entry.Volume.Source, entry.Clusters[0].Version, entry.Clusters[0].Dir, version, pgdata, entry.Volume.Source, pgdata,
 			)
 		}
+		moved := Found{Volume: Volume{Source: entry.Volume.Source, Target: home}}
+		for _, cluster := range entry.Clusters {
+			relative := strings.TrimPrefix(strings.TrimPrefix(cluster.Dir, path.Clean(entry.Volume.Target)), "/")
+			moved.Clusters = append(moved.Clusters, Cluster{Dir: path.Join(home, relative), Version: cluster.Version})
+		}
+		plan := decideIn(moved, version, wanted, pgdata)
+		if plan == nil {
+			plan = &Plan{NewDir: pgdata, NewVersion: version, Volume: moved.Volume}
+		}
+		plan.Remounted = entry.Volume.Target
+		return plan, nil
 	}
 	return nil, nil
+}
+
+// homeOf is where a volume holding pgdata is mounted: the innermost of
+// homes that contains it, else, for the 18+ layout's
+// <home>/<version>/docker, that <home> (postgres:19 declares no volume),
+// else "".
+func homeOf(pgdata, version string, homes []string) string {
+	best := ""
+	if strings.HasSuffix(pgdata, "/"+version+"/docker") {
+		best = path.Dir(path.Dir(pgdata))
+	}
+	for _, home := range homes {
+		home = path.Clean(home)
+		if within(pgdata, home) && len(home) > len(best) {
+			best = home
+		}
+	}
+	return best
 }
 
 // Run dumps the plan's old cluster with an image of its major and restores it
@@ -134,6 +180,12 @@ func Decide(version, pgdata string, found []Found) (*Plan, error) {
 // when no image of the old major can be found or pulled, or a step fails,
 // with that step's last output.
 func (p *Plan) Run(ctx context.Context, docker *dockerapi.Client, request Request, log func(string)) error {
+	if p.Remounted != "" {
+		log(fmt.Sprintf("%s was mounted at %s, which doesn't contain %s where Postgres %s keeps its data: it's mounted at %s from now on", p.Volume.Source, p.Remounted, p.NewDir, p.NewVersion, p.Volume.Target))
+	}
+	if !p.Upgrades() {
+		return nil
+	}
 	oldImage, err := oldImage(ctx, docker, request.Previous, request.Image, p.OldVersion, log)
 	if err != nil {
 		return err
@@ -155,7 +207,7 @@ func (p *Plan) Run(ctx context.Context, docker *dockerapi.Client, request Reques
 	if err := step(ctx, docker, request.Image, restoreScript, env, p.Volume, log); err != nil {
 		return fmt.Errorf("couldn't restore into Postgres %s: %w", p.NewVersion, err)
 	}
-	if p.OldDir == p.NewDir {
+	if p.OldDir == p.NewDir || within(p.NewDir, p.OldDir) {
 		log(fmt.Sprintf("Upgraded to Postgres %s. The %s cluster is kept in %s/homerun-pg%s-*, delete it once %s runs fine", p.NewVersion, p.OldVersion, p.OldDir, p.OldVersion, p.NewVersion))
 	} else {
 		log(fmt.Sprintf("Upgraded to Postgres %s. The %s cluster is kept in %s, delete it once %s runs fine", p.NewVersion, p.OldVersion, p.OldDir, p.NewVersion))
@@ -225,8 +277,10 @@ func superuser(env []string) string {
 	return "postgres"
 }
 
-// probe lists the clusters volume holds up to three levels down, read by a
-// throwaway container of image with the volume at its own target.
+// probe lists the clusters volume holds up to three levels down, each a
+// directory with a PG_VERSION and a global/pg_control (every database's own
+// base/<oid> directory has a PG_VERSION too), read by a throwaway container
+// of image with the volume at its own target.
 func probe(ctx context.Context, docker *dockerapi.Client, image string, volume Volume) ([]Cluster, error) {
 	result, err := docker.RunOneOff(ctx, dockerapi.OneOffConfig{
 		Binds:       []string{volume.Source + ":" + volume.Target},
@@ -362,7 +416,7 @@ func (w *lineWriter) flush() {
 	w.pending = ""
 }
 
-const probeScript = `find "$1" -maxdepth 3 -name PG_VERSION -type f | while read -r file; do printf '%s\t%s\n' "$(dirname "$file")" "$(head -n 1 "$file")"; done`
+const probeScript = `find "$1" -maxdepth 5 -path '*/global/pg_control' -type f | while read -r file; do dir=$(dirname "$(dirname "$file")"); [ -f "$dir/PG_VERSION" ] && printf '%s\t%s\n' "$dir" "$(head -n 1 "$dir/PG_VERSION")"; done; true`
 
 const asPostgres = `as_postgres() { if command -v gosu >/dev/null 2>&1; then gosu postgres "$@"; else su-exec postgres "$@"; fi; }
 uid=$(stat -c %u "$OLD")
@@ -414,15 +468,25 @@ if [ "$status" -ne 0 ] || grep 'ERROR:' "$WORK/restore.log" | grep -qv "role \"$
 	exit 1
 fi
 echo "Restored"
-if [ "$OLD" = "$NEW" ]; then
+keep_old() {
 	KEEP="$OLD/homerun-pg$OLD_VERSION-$(date +%Y%m%d%H%M%S)"
 	mkdir "$KEEP"
 	for entry in "$OLD"/*; do
-		case "$entry" in "$OLD"/homerun-pg*) continue ;; esac
+		case "$entry" in "$OLD"/homerun-pg* | "$1") continue ;; esac
 		mv "$entry" "$KEEP/"
 	done
+}
+if [ "$OLD" = "$NEW" ]; then
+	keep_old ""
 	mv "$NEXT"/* "$NEW/"
 else
+	case "$NEW" in
+	"$OLD"/*)
+		inner="${NEW#"$OLD"/}"
+		keep_old "$OLD/${inner%%/*}"
+		chmod 755 "$OLD"
+		;;
+	esac
 	if [ -e "$NEW" ]; then rmdir "$NEW"; fi
 	mkdir -p "$(dirname "$NEW")"
 	mv "$NEXT" "$NEW"

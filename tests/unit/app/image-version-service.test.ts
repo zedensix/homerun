@@ -70,8 +70,14 @@ let logOutput: string | null = null;
 let diagnosis: Record<string, unknown> | null = null;
 let mounts: Record<string, unknown>[] = [];
 let copyExitCode = 0;
-let postgresUpgrade: { error?: string; log: string[]; upgraded: boolean } = {
+let postgresUpgrade: {
+	error?: string;
+	log: string[];
+	remounts: { from: string; source: string; to: string }[];
+	upgraded: boolean;
+} = {
 	log: [],
+	remounts: [],
 	upgraded: false,
 };
 const oneOffs: Record<string, unknown>[] = [];
@@ -181,7 +187,7 @@ beforeEach(() => {
 	diagnosis = null;
 	mounts = [];
 	copyExitCode = 0;
-	postgresUpgrade = { log: [], upgraded: false };
+	postgresUpgrade = { log: [], remounts: [], upgraded: false };
 	for (const list of [
 		oneOffs,
 		shellProbes,
@@ -885,7 +891,11 @@ describe("ImageVersionService update trials", () => {
 			},
 		];
 		registryTags = [{ digest: "sha256:new", name: "1.24.4" }];
-		postgresUpgrade = { log: ["Upgraded to Postgres 19."], upgraded: true };
+		postgresUpgrade = {
+			log: ["Upgraded to Postgres 19."],
+			remounts: [],
+			upgraded: true,
+		};
 		const state = await ImageVersionService.check(svc);
 		expect(state?.trial?.status).toBe("passed");
 		expect(
@@ -903,6 +913,39 @@ describe("ImageVersionService update trials", () => {
 			},
 		]);
 		expect(state?.trial?.log).toContain("Upgraded to Postgres 19.");
+	});
+
+	test("a volume copy the Postgres upgrade moved is bound at its new path in the trial container", async () => {
+		const { svc } = fakeService({ updateTrialEnabled: true });
+		mounts = [
+			{
+				mount: {
+					toJSON: () => ({
+						containerPath: "/var/lib/postgresql/18/docker",
+						readOnly: false,
+					}),
+				},
+				volumeName: "data",
+				volumeSource: "gitea-data",
+			},
+		];
+		registryTags = [{ digest: "sha256:new", name: "1.24.4" }];
+		postgresUpgrade = {
+			log: [],
+			remounts: [
+				{
+					from: "/var/lib/postgresql/18/docker",
+					source: "homerun-trial-gitea-0",
+					to: "/var/lib/postgresql",
+				},
+			],
+			upgraded: true,
+		};
+		const state = await ImageVersionService.check(svc);
+		expect(state?.trial?.status).toBe("passed");
+		expect(containerCreate()?.body.HostConfig).toMatchObject({
+			Binds: ["homerun-trial-gitea-0:/var/lib/postgresql"],
+		});
 	});
 
 	test("a failed Postgres upgrade fails the trial before any container starts, logging what it did", async () => {
@@ -923,6 +966,7 @@ describe("ImageVersionService update trials", () => {
 		postgresUpgrade = {
 			error: "couldn't dump the Postgres 18 cluster: exited 1",
 			log: ["Dumping it with gitea/gitea:1.24.3"],
+			remounts: [],
 			upgraded: true,
 		};
 		const state = await ImageVersionService.check(svc);

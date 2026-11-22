@@ -27,9 +27,17 @@ func (s *Server) mountNetworks(r chi.Router) {
 // postgresUpgrade is what upgradePostgres answers: whether the volumes held a
 // cluster to upgrade, every line the upgrade logged, and why it failed.
 type postgresUpgrade struct {
-	Error    string   `json:"error,omitempty"`
-	Log      []string `json:"log"`
-	Upgraded bool     `json:"upgraded"`
+	Error    string            `json:"error,omitempty"`
+	Log      []string          `json:"log"`
+	Remounts []postgresRemount `json:"remounts"`
+	Upgraded bool              `json:"upgraded"`
+}
+
+// postgresRemount is a volume the upgrade moved to another container path.
+type postgresRemount struct {
+	From   string `json:"from"`
+	Source string `json:"source"`
+	To     string `json:"to"`
 }
 
 // upgradePostgres upgrades the Postgres cluster the request's volumes hold
@@ -45,13 +53,16 @@ func (s *Server) upgradePostgres(w http.ResponseWriter, r *http.Request) error {
 		return httpapi.Invalid(w, "Invalid request body",
 			[]httpapi.ValidationIssue{{Message: "image is required", Path: []string{"image"}}})
 	}
-	answer := postgresUpgrade{Log: []string{}}
+	answer := postgresUpgrade{Log: []string{}, Remounts: []postgresRemount{}}
 	plan, err := pgupgrade.Find(r.Context(), s.docker, request)
 	if err == nil && plan != nil {
-		answer.Upgraded = true
+		answer.Upgraded = plan.Upgrades()
 		err = plan.Run(r.Context(), s.docker, request, func(line string) {
 			answer.Log = append(answer.Log, line)
 		})
+		if err == nil && plan.Remounted != "" {
+			answer.Remounts = append(answer.Remounts, postgresRemount{From: plan.Remounted, Source: plan.Volume.Source, To: plan.Volume.Target})
+		}
 	}
 	if err != nil {
 		answer.Error = err.Error()

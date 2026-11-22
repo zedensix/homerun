@@ -40,6 +40,7 @@ interface TrialMount {
 interface PostgresUpgrade {
 	error?: string;
 	log: string[];
+	remounts: { from: string; source: string; to: string }[];
 	upgraded: boolean;
 }
 
@@ -136,11 +137,19 @@ class UpdateTrialServiceClass {
 			.catch(() => undefined);
 		const mounts = await this.#trialMounts(svc, progress);
 		try {
-			await this.#upgradePostgres(svc, { mounts, ref }, progress);
+			const upgraded = await this.#upgradePostgres(
+				svc,
+				{ mounts, ref },
+				progress,
+			);
 			await progress(
 				"Starting a throwaway container on the service's networks, with copies of its volumes and no ports or domains",
 			);
-			return await this.#startTrial(svc, { mounts, readiness, ref }, progress);
+			return await this.#startTrial(
+				svc,
+				{ mounts: upgraded, readiness, ref },
+				progress,
+			);
 		} finally {
 			await this.#removeTrialVolumes(mounts);
 		}
@@ -285,18 +294,20 @@ class UpdateTrialServiceClass {
 	 * update switches Postgres majors, the way the real deploy will (see the
 	 * worker's pgupgrade), dumping it with the live image. Does nothing for
 	 * any other image.
+	 * @returns The mounts, with each copy the upgrade moved to a new path
+	 * (a Postgres 18 volume mounted where 19 doesn't keep its data) bound there.
 	 * @throws When the upgrade fails, after logging what it did.
 	 */
 	async #upgradePostgres(
 		svc: ServiceDTO,
 		{ mounts, ref }: Pick<TrialSpec, "mounts" | "ref">,
 		progress: (...lines: string[]) => Promise<void>,
-	): Promise<void> {
+	): Promise<TrialMount[]> {
 		const volumes = mounts.flatMap((m) =>
 			m.copy ? [{ source: m.copy, target: m.target }] : [],
 		);
 		if (volumes.length === 0) {
-			return;
+			return mounts;
 		}
 		const result = await DockerService.worker.request<PostgresUpgrade>(
 			"POST",
@@ -323,6 +334,14 @@ class UpdateTrialServiceClass {
 			await progress(result.error);
 			throw new Error(result.error);
 		}
+		return mounts.map((m) => {
+			const remount = result.remounts.find(
+				(r) => r.source === m.copy && r.from === m.target,
+			);
+			return remount && m.copy
+				? { bind: `${m.copy}:${remount.to}`, copy: m.copy, target: remount.to }
+				: m;
+		});
 	}
 
 	/** Removes the volume copies a trial made, ignoring ones already gone. */

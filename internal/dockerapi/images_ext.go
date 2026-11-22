@@ -19,6 +19,7 @@ type ImageInspect struct {
 		Healthcheck *struct {
 			Test []string `json:"Test"`
 		} `json:"Healthcheck"`
+		Volumes []string `json:"Volumes"`
 	} `json:"Config"`
 	ID          string   `json:"Id"`
 	RepoDigests []string `json:"RepoDigests"`
@@ -58,6 +59,9 @@ func (c *Client) InspectImage(ctx context.Context, ref string) (*ImageInspect, e
 		inspected.Config.Cmd = config.Cmd
 		inspected.Config.Entrypoint = config.Entrypoint
 		inspected.Config.Env = config.Env
+		for volume := range config.Volumes {
+			inspected.Config.Volumes = append(inspected.Config.Volumes, volume)
+		}
 		if config.Healthcheck != nil {
 			inspected.Config.Healthcheck = &struct {
 				Test []string `json:"Test"`

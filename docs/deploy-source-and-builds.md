@@ -117,9 +117,12 @@ trial runs the same upgrade on its volume copies first.
 
 From 18 on the official image keeps its data in
 `/var/lib/postgresql/<major>/docker` and expects the volume at
-`/var/lib/postgresql`. A volume still mounted at `/var/lib/postgresql/data`
-fails the deploy with that advice: change the mount's path to
-`/var/lib/postgresql` and deploy again, the old cluster is upgraded from there.
+`/var/lib/postgresql`. A volume mounted where the new major's data directory
+isn't (the pre-18 `/var/lib/postgresql/data`, or `/var/lib/postgresql/18/docker`
+on a move to 19) is moved to `/var/lib/postgresql` by the upgrade, and the
+service's mount keeps that path from then on. The old cluster, then at the
+volume's root, is moved into a `homerun-pg<version>-<time>` directory beside the
+new one.
 
 The same pin, watch and update are on the [REST API and the CLI](api-and-cli.md)
 (`/api/v1/services/:id/version`, `homerun services version`), the

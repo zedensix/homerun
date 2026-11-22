@@ -40,6 +40,13 @@ func (r *run) upgradePostgres(ctx context.Context, resolved resolvedImage) error
 	if err != nil || plan == nil {
 		return err
 	}
+	if !plan.Upgrades() {
+		if err := plan.Run(ctx, r.docker, request, r.progress.line); err != nil {
+			return err
+		}
+		r.remount(plan)
+		return nil
+	}
 	return tracing.Stage(ctx, "upgrade postgres", func(ctx context.Context) error {
 		running, err := r.runningWorkloads(ctx)
 		if err != nil {
@@ -57,6 +64,7 @@ func (r *run) upgradePostgres(ctx context.Context, resolved resolvedImage) error
 			return plan.Run(ctx, r.docker, request, r.progress.line)
 		}()
 		if upgradeErr == nil {
+			r.remount(plan)
 			return nil
 		}
 		for _, workload := range stopped {
@@ -78,4 +86,46 @@ func (r *run) isPostgres(ctx context.Context, ref string) bool {
 	return err == nil && slices.ContainsFunc(inspected.Config.Env, func(entry string) bool {
 		return strings.HasPrefix(entry, "PG_MAJOR=")
 	})
+}
+
+// remount moves the plan's volume to its new target in this deploy's
+// workload, a container's Binds or a swarm service's Mounts, and reports the
+// move so the app keeps it for the next deploys. A plan without a move is
+// left alone.
+func (r *run) remount(plan *pgupgrade.Plan) {
+	if plan.Remounted == "" {
+		return
+	}
+	source, from, to := plan.Volume.Source, plan.Remounted, plan.Volume.Target
+	for index, volume := range r.spec.Volumes {
+		if volume.Source == source && volume.Target == from {
+			r.spec.Volumes[index].Target = to
+		}
+	}
+	RemountTemplate(r.spec.Workload.Template, source, from, to)
+	r.result.Remounts = append(r.result.Remounts, Remount{From: from, Source: source, To: to})
+}
+
+// RemountTemplate rewrites the mount of source at from to to in an Engine
+// container create body (HostConfig.Binds, source:target[:ro]) or a swarm
+// service spec (TaskTemplate.ContainerSpec.Mounts).
+func RemountTemplate(template map[string]any, source, from, to string) {
+	if hostConfig, ok := template["HostConfig"].(map[string]any); ok {
+		if binds, ok := hostConfig["Binds"].([]any); ok {
+			for index, bind := range binds {
+				text, _ := bind.(string)
+				if rest, found := strings.CutPrefix(text, source+":"+from); found && (rest == "" || strings.HasPrefix(rest, ":")) {
+					binds[index] = source + ":" + to + rest
+				}
+			}
+		}
+	}
+	task, _ := template["TaskTemplate"].(map[string]any)
+	containerSpec, _ := task["ContainerSpec"].(map[string]any)
+	mounts, _ := containerSpec["Mounts"].([]any)
+	for _, mount := range mounts {
+		if entry, ok := mount.(map[string]any); ok && entry["Source"] == source && entry["Target"] == from {
+			entry["Target"] = to
+		}
+	}
 }

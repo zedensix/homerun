@@ -117,6 +117,7 @@ interface WorkerDeployOutcome {
 	gitRef?: string;
 	image?: string;
 	imageId?: string;
+	remounts?: { from: string; source: string; to: string }[];
 	scans?: WorkerScan[];
 	serviceImage?: { image: string; tag: string };
 	swarmServiceId?: string;
@@ -528,7 +529,7 @@ class DeploymentServiceClass {
 		}
 	}
 
-	/** Records what the worker did whatever the outcome: the commit a git build built, the service's new image, and the scans. */
+	/** Records what the worker did whatever the outcome: the commit a git build built, the service's new image, the mounts a Postgres upgrade moved, and the scans. */
 	async #applyWorkerOutcome(
 		dep: DeploymentDTO,
 		svc: ServiceDTO,
@@ -542,6 +543,18 @@ class DeploymentServiceClass {
 		}
 		if (outcome.serviceImage) {
 			await svc.update(outcome.serviceImage);
+		}
+		if (outcome.remounts?.length) {
+			const mounts = await ServiceVolumeDTO.listForService(svc.id);
+			for (const remount of outcome.remounts) {
+				const moved = mounts.find(
+					(m) =>
+						m.volumeSource === remount.source &&
+						m.mount.toJSON().containerPath === remount.from,
+				);
+				// oxlint-disable-next-line no-await-in-loop -- one mount at a time, each recorded on the activity in order
+				await moved?.mount.update({ containerPath: remount.to });
+			}
 		}
 		await this.#recordWorkerScans(dep, svc, outcome.scans ?? []);
 	}
