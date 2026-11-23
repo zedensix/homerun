@@ -29,6 +29,7 @@ bcrypt
 buildx
 CIs?
 CNAMEs
+CPUs
 cgroups?
 [Cc]onfigs?
 Coolify
