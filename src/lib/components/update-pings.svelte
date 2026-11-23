@@ -40,9 +40,17 @@
 		return container.service || container.name;
 	}
 
-	/** The image's tag, which flips to the new version as the containers switch. */
+	/**
+	 * The image's tag, which flips to the new version as the containers
+	 * switch. A container whose tag has moved on to the newly pulled image is
+	 * listed by its old image id instead, shortened to 7 characters like a
+	 * commit.
+	 */
 	function imageTag(image: string): string {
 		const tag = image.split("@")[0].split("/").pop()?.split(":")[1];
+		if (tag && /^[0-9a-f]{12,}$/.test(tag)) {
+			return tag.slice(0, 7);
+		}
 		return tag ?? "latest";
 	}
 
@@ -117,11 +125,12 @@
 					<span class="relative size-2 rounded-full {dotClass(container)}"
 					></span>
 				</span>
-				<span class="text-text truncate text-xs font-medium"
+				<span class="text-text shrink-0 text-xs font-medium"
 					>{containerLabel(container)}</span
 				>
-				<span class="text-text-subtle ml-auto truncate font-mono text-[10px]"
-					>{imageTag(container.image)}</span
+				<span
+					class="text-text-subtle ml-auto min-w-0 truncate font-mono text-[10px]"
+					title={container.image}>{imageTag(container.image)}</span
 				>
 			</div>
 			<p class="text-text-muted mt-1 truncate text-[11px]">
