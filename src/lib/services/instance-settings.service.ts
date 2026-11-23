@@ -1,4 +1,10 @@
-import { isBuildConcurrency } from "#lib/build-servers.js";
+import {
+	BUILD_CPU_LIMIT_ERROR,
+	BUILD_MEMORY_LIMIT_ERROR,
+	isBuildConcurrency,
+	isBuildCpuLimit,
+	isBuildMemoryLimit,
+} from "#lib/build-servers.js";
 import { serviceDomain } from "#lib/config.js";
 import {
 	type InstanceSettingsDockerInput,
@@ -176,6 +182,8 @@ class InstanceSettingsServiceClass {
 	async saveBuildServers(
 		input: {
 			buildConcurrency: number;
+			buildCpuLimit: number;
+			buildMemoryLimitMb: number;
 			buildOnHost: boolean;
 			defaultBuildServer: string;
 		},
@@ -186,6 +194,12 @@ class InstanceSettingsServiceClass {
 				`Concurrent builds must be between 0 (no limit) and ${settings.docker.maxBuildConcurrency}.`,
 			);
 		}
+		if (!isBuildCpuLimit(input.buildCpuLimit)) {
+			throw new InstanceSettingsError(BUILD_CPU_LIMIT_ERROR);
+		}
+		if (!isBuildMemoryLimit(input.buildMemoryLimitMb)) {
+			throw new InstanceSettingsError(BUILD_MEMORY_LIMIT_ERROR);
+		}
 		const pick = input.defaultBuildServer;
 		if (!(await isKnownBuildServerPick(pick))) {
 			throw new InstanceSettingsError("That build server wasn't found.");
@@ -193,7 +207,7 @@ class InstanceSettingsServiceClass {
 		const instance = await InstanceSettingsDTO.get();
 		await instance.updateBuildServers(input);
 		logger.info(
-			`Build server settings updated: concurrency=${input.buildConcurrency} buildOnHost=${input.buildOnHost} default=${pick || "host"} user=${userId}`,
+			`Build server settings updated: concurrency=${input.buildConcurrency} cpus=${input.buildCpuLimit} memoryMb=${input.buildMemoryLimitMb} buildOnHost=${input.buildOnHost} default=${pick || "host"} user=${userId}`,
 		);
 	}
 

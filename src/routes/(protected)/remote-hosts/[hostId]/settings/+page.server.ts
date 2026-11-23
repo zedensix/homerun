@@ -15,7 +15,11 @@ const logger = new Logger("RemoteHosts");
 export const load = async ({ parent }) => {
 	await parent();
 	const settings = await InstanceSettingsDTO.get();
-	return { buildConcurrency: settings.buildConcurrency };
+	return {
+		buildConcurrency: settings.buildConcurrency,
+		buildCpuLimit: settings.buildCpuLimit,
+		buildMemoryLimitMb: settings.buildMemoryLimitMb,
+	};
 };
 
 export const actions = {
@@ -40,12 +44,16 @@ export const actions = {
 		if (!host) {
 			return fail(404, { error: "Remote host not found." });
 		}
-		const value = String(
-			(await request.formData()).get("maxConcurrentBuilds") ?? "",
-		).trim();
+		const formData = await request.formData();
+		const field = (key: string) => {
+			const value = String(formData.get(key) ?? "").trim();
+			return value === "" ? null : Number(value);
+		};
 		try {
 			await RemoteHostSettingsService.update(host, {
-				maxConcurrentBuilds: value === "" ? null : Number(value),
+				buildCpuLimit: field("buildCpuLimit"),
+				buildMemoryLimitMb: field("buildMemoryLimitMb"),
+				maxConcurrentBuilds: field("maxConcurrentBuilds"),
 			});
 		} catch (err) {
 			if (err instanceof RemoteHostSettingsError) {

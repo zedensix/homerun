@@ -542,6 +542,8 @@ export const remoteHost = pgTable(
 		kind: text("kind", { enum: ["docker", "agent"] })
 			.default("docker")
 			.notNull(),
+		buildCpuLimit: doublePrecision("build_cpu_limit"),
+		buildMemoryLimitMb: integer("build_memory_limit_mb"),
 		maxConcurrentBuilds: integer("max_concurrent_builds"),
 		name: text("name").notNull(),
 		// AES-256-GCM ciphertext, same scheme as service.registryPasswordEnc
@@ -911,6 +913,8 @@ export const packageRegistryToken = pgTable(
 export const instanceSettings = pgTable("instance_settings", {
 	authCheckUrl: text("auth_check_url"),
 	buildConcurrency: integer("build_concurrency"),
+	buildCpuLimit: doublePrecision("build_cpu_limit"),
+	buildMemoryLimitMb: integer("build_memory_limit_mb"),
 	buildOnHost: boolean("build_on_host"),
 	defaultBuildServer: text("default_build_server"),
 	authCrossSubdomainCookies: boolean("auth_cross_subdomain_cookies"),

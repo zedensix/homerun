@@ -37,6 +37,8 @@ interface CrudRouteSpec {
 export const remoteHostResponse = z.object({
 	agentTokenSet: z.boolean(),
 	agentUrl: z.string().nullable(),
+	buildCpuLimit: z.string().nullable(),
+	buildMemoryLimitMb: z.number().int().nullable(),
 	createdAt: timestamp,
 	dockerHost: z.string().nullable(),
 	enabled: z.boolean(),

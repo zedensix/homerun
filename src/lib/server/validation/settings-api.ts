@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { ERROR_PAGE_KINDS } from "#lib/error-pages.js";
 import { SCAN_SEVERITIES } from "#lib/image-scan.js";
+import { settings } from "#lib/settings.js";
 import { UI_MODES } from "#lib/ui-mode.js";
 import { UPDATE_CHANNELS } from "#lib/update-channel.js";
 
@@ -32,6 +33,25 @@ export const instanceSettingsApiBody = z.object({
 	buildConcurrency: whole.describe(
 		"How many builds each build server runs at once unless it sets its own limit, 0 to 64, 0 for no limit.",
 	),
+	buildCpuLimit: z
+		.union([
+			z.number().min(0).max(settings.docker.maxBuildCpuLimit),
+			text.regex(/^\d+(\.\d+)?$/, "Build CPUs is a number of cores, like 1.5."),
+		])
+		.nullable()
+		.optional()
+		.describe(
+			"The CPU cores every build on a server shares unless the server sets its own, like 1.5. Null or 0 for no limit. Answered as a string.",
+		),
+	buildMemoryLimitMb: z
+		.number()
+		.int()
+		.min(0)
+		.nullable()
+		.optional()
+		.describe(
+			`The memory in MB every build on a server shares unless the server sets its own, 0 for no limit, else at least ${settings.docker.minBuildMemoryLimitMb}.`,
+		),
 	buildOnHost: z
 		.boolean()
 		.optional()

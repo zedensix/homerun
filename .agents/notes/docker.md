@@ -1681,6 +1681,27 @@ so a deploy waiting on them holds no slot. `defaultBuildServer` is applied in
 git service created without either column set, so previews, environments and
 canaries keep copying their parent's.
 
+**Build CPU and memory caps.** `instance_settings.build_cpu_limit` (cores,
+double) and `build_memory_limit_mb`, overridden per server by the same two
+`remote_host` columns (null follows the instance, 0 is no cap), resolved by
+`buildResourceLimits` (`#lib/build-servers.js`) in `worker-spec.ts`'s
+`buildSpec` and sent as the build spec's `cpuLimit`/`memoryLimitMb`, on to an
+agent in `POST /v1/build`'s body. `BuilderEnv` turns them into `BUILD_CPU_QUOTA`
+(CFS quota over a 100000 µs period) and `BUILD_MEMORY`, and `builder.sh` then
+builds through the `homerun-cache` docker-container builder (created with
+`cpu-quota`/`memory`/`memory-swap` driver-opts and `default-load=true`) instead
+of the daemon's own BuildKit, which can't be capped: every RUN step runs inside
+that one container's cgroup, so concurrent builds on a daemon share the cap. The
+limits it was created with are written to `/tools/buildx/homerun-cache.limits`;
+a mismatch removes it with `--keep-state` and recreates it, and that same check
+recreates a builder made before the file existed once. Nixpacks shells out to
+`docker build`, which honours `BUILDX_BUILDER` and loads through `default-load`;
+`pack` runs its lifecycle containers on the daemon directly, so buildpacks
+builds stay uncapped and say so in the log. Verified against a real daemon: the
+cap lands on the BuildKit container's `HostConfig`, a RUN step allocating past
+the memory cap fails with `cannot allocate memory`, and Docker Desktop drops
+`memory-swap` (no swap accounting in its kernel).
+
 **`ssh://` Docker hosts** (`internal/dockerapi/ssh.go`). `NewRemote` opens no
 connection up front: an `sshTunnel` dials `user@host[:22]` with the instance's
 machine-terminal key (`instance_settings.ssh_private_key_enc`) on first use,

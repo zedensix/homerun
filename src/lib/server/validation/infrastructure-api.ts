@@ -31,6 +31,25 @@ export const remoteHostApiBody = z.object({
 		.describe(
 			"The Docker daemon (kind docker): tcp://host:2376 or ssh://user@host.",
 		),
+	buildCpuLimit: z
+		.union([
+			z.number().min(0).max(settings.docker.maxBuildCpuLimit),
+			text.regex(/^\d+(\.\d+)?$/, "Build CPUs is a number of cores, like 1.5."),
+		])
+		.nullable()
+		.optional()
+		.describe(
+			"The CPU cores every build on it shares, like 1.5, 0 for no limit. Null follows the instance's buildCpuLimit. Answered as a string.",
+		),
+	buildMemoryLimitMb: z
+		.number()
+		.int()
+		.min(0)
+		.nullable()
+		.optional()
+		.describe(
+			`The memory in MB every build on it shares, 0 for no limit, else at least ${settings.docker.minBuildMemoryLimitMb}. Null follows the instance's buildMemoryLimitMb.`,
+		),
 	kind: z.enum(["docker", "agent"]).default("docker"),
 	maxConcurrentBuilds: z
 		.number()

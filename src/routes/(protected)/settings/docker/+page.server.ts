@@ -71,6 +71,8 @@ export const actions = {
 			await InstanceSettingsService.saveBuildServers(
 				{
 					buildConcurrency: Number(formData.get("buildConcurrency")),
+					buildCpuLimit: Number(formData.get("buildCpuLimit")),
+					buildMemoryLimitMb: Number(formData.get("buildMemoryLimitMb")),
 					buildOnHost: formData.get("buildOnHost") === "on",
 					defaultBuildServer: String(formData.get("defaultBuildServer") ?? ""),
 				},

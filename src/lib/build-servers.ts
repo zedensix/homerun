@@ -76,6 +76,43 @@ export function pickBuildServer(
 	return idle[Math.floor(random() * idle.length)]?.id ?? null;
 }
 
+export const BUILD_CPU_LIMIT_ERROR = `Build CPUs must be between 0 (no cap) and ${settings.docker.maxBuildCpuLimit} cores.`;
+export const BUILD_MEMORY_LIMIT_ERROR = `Build memory must be 0 (no cap) or at least ${settings.docker.minBuildMemoryLimitMb} MB.`;
+
+/** Whether `value` is a usable build CPU cap in cores: 0 (no cap) up to `settings.docker.maxBuildCpuLimit`. */
+export function isBuildCpuLimit(value: number): boolean {
+	return (
+		Number.isFinite(value) &&
+		value >= 0 &&
+		value <= settings.docker.maxBuildCpuLimit
+	);
+}
+
+/** Whether `value` is a usable build memory cap in MB: 0 (no cap) or a whole number from `settings.docker.minBuildMemoryLimitMb`. */
+export function isBuildMemoryLimit(value: number): boolean {
+	return (
+		Number.isSafeInteger(value) &&
+		(value === 0 || value >= settings.docker.minBuildMemoryLimitMb)
+	);
+}
+
+/**
+ * The CPU and memory caps a build gets on a server: the server's own, else
+ * the instance's, each 0 when uncapped.
+ */
+export function buildResourceLimits(
+	server: {
+		buildCpuLimit: number | null;
+		buildMemoryLimitMb: number | null;
+	} | null,
+	instance: { buildCpuLimit: number; buildMemoryLimitMb: number },
+): { cpuLimit: number; memoryLimitMb: number } {
+	return {
+		cpuLimit: server?.buildCpuLimit ?? instance.buildCpuLimit,
+		memoryLimitMb: server?.buildMemoryLimitMb ?? instance.buildMemoryLimitMb,
+	};
+}
+
 /** Whether `value` is a usable concurrent-build limit: a whole number from 0 (no limit) to `settings.docker.maxBuildConcurrency`. */
 export function isBuildConcurrency(value: number): boolean {
 	return (

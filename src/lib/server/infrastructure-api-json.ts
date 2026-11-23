@@ -30,6 +30,7 @@ export function remoteHostApiJson(row: RemoteHost) {
 	return {
 		...rest,
 		agentTokenSet: Boolean(agentTokenEnc),
+		buildCpuLimit: cpuLimitText(rest.buildCpuLimit),
 		tlsCaSet: Boolean(tlsCaEnc),
 		tlsCertSet: Boolean(tlsCertEnc),
 		tlsKeySet: Boolean(tlsKeyEnc),

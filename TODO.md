@@ -29,6 +29,11 @@ When done delete the entry, no bloat.
       deploy waits on them: a failed rollout left no lines from its tasks for
       its whole 15 minutes, and the crash-looping tasks swarm kept afterwards
       were stored under the previous revision's deployment id.
+- [ ] Build CPU and memory caps don't reach Heroku/Paketo buildpacks builds:
+      `pack` starts its lifecycle containers on the daemon directly, outside the
+      capped BuildKit container. Capping them would mean running pack against a
+      daemon it can be told to limit, or `--docker-host` at a proxy that adds
+      the limits to the containers it creates.
 - [ ] Resource incidents have no REST API, MCP tool or CLI command yet: only
       Monitoring → Incidents reads them.
 - [ ] A remote host connected as a raw Docker daemon (`tcp://`, `ssh://`) isn't

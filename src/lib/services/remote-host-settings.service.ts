@@ -1,4 +1,10 @@
-import { isBuildConcurrency } from "#lib/build-servers.js";
+import {
+	BUILD_CPU_LIMIT_ERROR,
+	BUILD_MEMORY_LIMIT_ERROR,
+	isBuildConcurrency,
+	isBuildCpuLimit,
+	isBuildMemoryLimit,
+} from "#lib/build-servers.js";
 import { RemoteHostDTO } from "#lib/dto/remote-host-dto.js";
 import { Logger } from "#lib/logger.js";
 import type { RemoteHost } from "#lib/server/db/schema.js";
@@ -16,6 +22,8 @@ export class RemoteHostSettingsError extends Error {}
 export interface RemoteHostSettings {
 	agentToken?: string | null;
 	agentUrl?: string | null;
+	buildCpuLimit?: number | string | null;
+	buildMemoryLimitMb?: number | null;
 	dockerHost?: string | null;
 	enabled?: boolean;
 	kind?: RemoteHost["kind"];
@@ -77,18 +85,30 @@ function tlsColumns(input: RemoteHostSettings) {
 	};
 }
 
-/** The concurrent-build limit sent, null to follow the instance default, left out when not sent. */
+/** The concurrent-build limit and build resource caps sent, each null to follow the instance default, left out when not sent. */
 function buildLimitColumns(input: RemoteHostSettings) {
 	const limit = input.maxConcurrentBuilds;
-	if (limit === undefined) {
-		return {};
-	}
-	if (limit !== null && !isBuildConcurrency(limit)) {
+	if (limit !== undefined && limit !== null && !isBuildConcurrency(limit)) {
 		throw new RemoteHostSettingsError(
 			`Concurrent builds must be between 0 (no limit) and ${settings.docker.maxBuildConcurrency}.`,
 		);
 	}
-	return { maxConcurrentBuilds: limit };
+	const cpus =
+		input.buildCpuLimit === undefined || input.buildCpuLimit === null
+			? input.buildCpuLimit
+			: Number(input.buildCpuLimit);
+	if (cpus !== undefined && cpus !== null && !isBuildCpuLimit(cpus)) {
+		throw new RemoteHostSettingsError(BUILD_CPU_LIMIT_ERROR);
+	}
+	const memory = input.buildMemoryLimitMb;
+	if (memory !== undefined && memory !== null && !isBuildMemoryLimit(memory)) {
+		throw new RemoteHostSettingsError(BUILD_MEMORY_LIMIT_ERROR);
+	}
+	return {
+		...(cpus === undefined ? {} : { buildCpuLimit: cpus }),
+		...(memory === undefined ? {} : { buildMemoryLimitMb: memory }),
+		...(limit === undefined ? {} : { maxConcurrentBuilds: limit }),
+	};
 }
 
 /** Asks the agent at `agentUrl` to accept `token`. */

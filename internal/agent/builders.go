@@ -4,9 +4,11 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"math"
 	"path"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -61,6 +63,10 @@ var BuildArgNamePattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 // clobber it.
 const buildArgEnvPrefix = "HOMERUN_ARG_"
 
+// buildCPUPeriod is the CFS period, in microseconds, the builder script gives
+// the BuildKit container alongside BUILD_CPU_QUOTA.
+const buildCPUPeriod = 100000
+
 // MustParseTools parses builder-tools.json, panicking on invalid data since a
 // broken embed should stop the agent at startup, not at build time.
 func MustParseTools(raw []byte) BuilderTools {
@@ -90,11 +96,15 @@ type BuilderInput struct {
 	// BuildArgs are the service's build-time variables, handed to whichever
 	// tool builds as build args (Dockerfile, bake) or build env (Nixpacks,
 	// Railpack, buildpacks).
-	BuildArgs      map[string]string
-	BuildTarget    string
-	BuildContext   string
-	CacheRegistry  *CacheRegistry
+	BuildArgs     map[string]string
+	BuildTarget   string
+	BuildContext  string
+	CacheRegistry *CacheRegistry
+	// CPULimit (cores) and MemoryLimitMB cap the BuildKit container every
+	// build on the daemon shares, 0 for no cap.
+	CPULimit       float64
 	DockerfilePath string
+	MemoryLimitMB  int
 	Method         string
 	NoCache        bool
 	// Platform is the os/arch the image has to run on, empty for the building
@@ -181,6 +191,15 @@ func BuilderEnv(input BuilderInput) ([]string, error) {
 	if input.NoCache {
 		env["NO_CACHE"] = "1"
 	}
+	if input.CPULimit < 0 || input.MemoryLimitMB < 0 {
+		return nil, fmt.Errorf("Build resource limits can't be negative.")
+	}
+	if quota := int(math.Round(input.CPULimit * buildCPUPeriod)); quota > 0 {
+		env["BUILD_CPU_QUOTA"] = strconv.Itoa(quota)
+	}
+	if input.MemoryLimitMB > 0 {
+		env["BUILD_MEMORY"] = strconv.Itoa(input.MemoryLimitMB) + "m"
+	}
 	if input.Platform != "" {
 		if !platformPattern.MatchString(input.Platform) {
 			return nil, fmt.Errorf("The build platform %s isn't valid, use an os/arch pair like linux/amd64.", input.Platform)
@@ -242,7 +261,7 @@ var envOrder = []string{
 	"BUILD_DIR", "BUILD_METHOD", "CACHE_PASSWORD", "CACHE_REF", "CACHE_REGISTRY",
 	"CACHE_USERNAME", "IMAGE_TAG", "NIXPACKS_VERSION", "PACK_VERSION",
 	"PACK_VOLUME_KEY", "RAILPACK_VERSION", "BUILD_FILE", "BUILD_TARGET", "PACK_BUILDER", "NO_CACHE",
-	"BINFMT_IMAGE", "BUILD_PLATFORM", "BUILD_ARGS",
+	"BINFMT_IMAGE", "BUILD_PLATFORM", "BUILD_ARGS", "BUILD_CPU_QUOTA", "BUILD_MEMORY",
 }
 
 // orderedEnv renders env as KEY=value strings in envOrder, followed by the

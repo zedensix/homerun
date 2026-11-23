@@ -43,14 +43,33 @@ fetch() {
   mv -f "$tmp/$3" "/tools/$1"
   rm -rf "$tmp"
 }
-use_cache_builder() {
+limited() {
+  [ -n "${BUILD_CPU_QUOTA:-}${BUILD_MEMORY:-}" ]
+}
+use_builder() {
   if [ -n "$CACHE_USERNAME" ]; then
     printf '%s' "$CACHE_PASSWORD" | docker login "${CACHE_REGISTRY%%/*}" --username "$CACHE_USERNAME" --password-stdin >/dev/null
   fi
   export BUILDX_CONFIG=/tools/buildx
+  limits="cpu=${BUILD_CPU_QUOTA:-} memory=${BUILD_MEMORY:-}"
+  if [ "$(cat /tools/buildx/homerun-cache.limits 2>/dev/null || true)" != "$limits" ]; then
+    docker buildx rm --keep-state homerun-cache >/dev/null 2>&1 || true
+  fi
   if ! docker buildx inspect --bootstrap homerun-cache >/dev/null 2>&1; then
-    docker buildx create --name homerun-cache --driver docker-container --driver-opt network=host >/dev/null 2>&1 || true
+    set -- --driver-opt network=host --driver-opt default-load=true
+    if [ -n "${BUILD_CPU_QUOTA:-}" ]; then
+      set -- "$@" --driver-opt cpu-period=100000 --driver-opt "cpu-quota=$BUILD_CPU_QUOTA"
+    fi
+    if [ -n "${BUILD_MEMORY:-}" ]; then
+      set -- "$@" --driver-opt "memory=$BUILD_MEMORY" --driver-opt "memory-swap=$BUILD_MEMORY"
+    fi
+    docker buildx create --name homerun-cache --driver docker-container "$@" >/dev/null 2>&1 || true
     docker buildx inspect --bootstrap homerun-cache >/dev/null
+  fi
+  mkdir -p /tools/buildx
+  printf '%s' "$limits" > /tools/buildx/homerun-cache.limits
+  if limited; then
+    echo "Build resources capped (${BUILD_CPU_QUOTA:+cpus=$(awk "BEGIN { print $BUILD_CPU_QUOTA / 100000 }")}${BUILD_CPU_QUOTA:+${BUILD_MEMORY:+ }}${BUILD_MEMORY:+memory=${BUILD_MEMORY%m}MB}), shared by every build on this server."
   fi
 }
 emulates() {
@@ -98,9 +117,12 @@ case "$BUILD_METHOD" in
     if [ -n "$platform" ]; then
       set -- "$@" --platform "$platform"
     fi
+    if [ -n "$CACHE_REF" ] || limited; then
+      use_builder
+      set -- "$@" --builder homerun-cache
+    fi
     if [ -n "$CACHE_REF" ]; then
-      use_cache_builder
-      set -- "$@" --builder homerun-cache --cache-from "type=registry,ref=$CACHE_REF" --cache-to "type=registry,ref=$CACHE_REF,mode=max,ignore-error=true"
+      set -- "$@" --cache-from "type=registry,ref=$CACHE_REF" --cache-to "type=registry,ref=$CACHE_REF,mode=max,ignore-error=true"
     fi
     exec docker buildx "$@" "$BUILD_DIR"
     ;;
@@ -128,9 +150,12 @@ case "$BUILD_METHOD" in
     if [ -n "$platform" ]; then
       set -- "$@" --set "$targets.platform=$platform"
     fi
+    if [ -n "$CACHE_REF" ] || limited; then
+      use_builder
+      set -- "$@" --builder homerun-cache
+    fi
     if [ -n "$CACHE_REF" ]; then
-      use_cache_builder
-      set -- "$@" --builder homerun-cache --set "$targets.cache-from=type=registry,ref=$CACHE_REF" --set "$targets.cache-to=type=registry,ref=$CACHE_REF,mode=max,ignore-error=true"
+      set -- "$@" --set "$targets.cache-from=type=registry,ref=$CACHE_REF" --set "$targets.cache-to=type=registry,ref=$CACHE_REF,mode=max,ignore-error=true"
     fi
     exec docker buildx "$@" "$BUILD_TARGET"
     ;;
@@ -146,6 +171,10 @@ case "$BUILD_METHOD" in
     fi
     if [ -n "$platform" ]; then
       set -- "$@" --platform "$platform"
+    fi
+    if limited; then
+      use_builder
+      export BUILDX_BUILDER=homerun-cache
     fi
     exec "/tools/nixpacks-$NIXPACKS_VERSION" "$@"
     ;;
@@ -167,9 +196,12 @@ case "$BUILD_METHOD" in
     if [ -n "$platform" ]; then
       set -- "$@" --platform "$platform"
     fi
+    if [ -n "$CACHE_REF" ] || limited; then
+      use_builder
+      set -- "$@" --builder homerun-cache
+    fi
     if [ -n "$CACHE_REF" ]; then
-      use_cache_builder
-      set -- "$@" --builder homerun-cache --cache-from "type=registry,ref=$CACHE_REF" --cache-to "type=registry,ref=$CACHE_REF,mode=max,ignore-error=true"
+      set -- "$@" --cache-from "type=registry,ref=$CACHE_REF" --cache-to "type=registry,ref=$CACHE_REF,mode=max,ignore-error=true"
     fi
     exec docker buildx "$@" "$BUILD_DIR"
     ;;
@@ -185,6 +217,9 @@ case "$BUILD_METHOD" in
     fi
     if [ -n "$platform" ]; then
       set -- "$@" --platform "$platform"
+    fi
+    if limited; then
+      echo "Build resource limits don't apply to buildpacks builds: pack runs its build containers on the daemon directly."
     fi
     exec "/tools/pack-$PACK_VERSION" "$@"
     ;;

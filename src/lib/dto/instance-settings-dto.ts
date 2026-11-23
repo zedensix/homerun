@@ -509,6 +509,16 @@ export class InstanceSettingsDTO extends BaseDTO<InstanceSettings> {
 		return this.row.buildConcurrency ?? 0;
 	}
 
+	/** The CPU cores builds on a server share unless it sets its own cap, 0 (the default) for no cap. */
+	get buildCpuLimit(): number {
+		return this.row.buildCpuLimit ?? 0;
+	}
+
+	/** The memory, in MB, builds on a server share unless it sets its own cap, 0 (the default) for no cap. */
+	get buildMemoryLimitMb(): number {
+		return this.row.buildMemoryLimitMb ?? 0;
+	}
+
 	/** Whether git builds may run on this host while build servers are registered, on unless explicitly disabled. */
 	get buildOnHost(): boolean {
 		return this.row.buildOnHost ?? true;
@@ -522,11 +532,15 @@ export class InstanceSettingsDTO extends BaseDTO<InstanceSettings> {
 	/** Persists the build server defaults. */
 	async updateBuildServers(input: {
 		buildConcurrency: number;
+		buildCpuLimit: number;
+		buildMemoryLimitMb: number;
 		buildOnHost: boolean;
 		defaultBuildServer: string;
 	}): Promise<void> {
 		await this.persist({
 			buildConcurrency: input.buildConcurrency,
+			buildCpuLimit: input.buildCpuLimit || null,
+			buildMemoryLimitMb: input.buildMemoryLimitMb || null,
 			buildOnHost: input.buildOnHost,
 			defaultBuildServer: input.defaultBuildServer || null,
 		});

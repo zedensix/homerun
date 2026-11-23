@@ -177,15 +177,15 @@
 			action="?/updateBuilds"
 			method="POST"
 			use:enhance={enhanceToast({
-				error: "Couldn't save the build limit.",
-				loading: "Saving the build limit",
+				error: "Couldn't save the build limits.",
+				loading: "Saving the build limits",
 				onSettled: () => {
 					savingBuilds = false;
 				},
 				onStart: () => {
 					savingBuilds = true;
 				},
-				success: "Build limit saved.",
+				success: "Build limits saved.",
 			})}
 		>
 			<div>
@@ -206,6 +206,40 @@
 					<a class="underline" href={resolve("settings/docker")}
 						>Settings → Docker</a
 					>.
+				</p>
+			</div>
+			<div class="grid gap-4 md:grid-cols-2">
+				<div>
+					<Label class="mb-1.5" for="buildCpuLimit">Build CPUs</Label>
+					<Input
+						id="buildCpuLimit"
+						max={settings.docker.maxBuildCpuLimit}
+						min={0}
+						name="buildCpuLimit"
+						placeholder={`${data.buildCpuLimit || "No limit"} (instance default)`}
+						step="0.1"
+						type="number"
+						value={data.host.buildCpuLimit ?? ""}
+					/>
+				</div>
+				<div>
+					<Label class="mb-1.5" for="buildMemoryLimitMb"
+						>Build memory (MB)</Label
+					>
+					<Input
+						id="buildMemoryLimitMb"
+						min={0}
+						name="buildMemoryLimitMb"
+						placeholder={`${data.buildMemoryLimitMb || "No limit"} (instance default)`}
+						step="1"
+						type="number"
+						value={data.host.buildMemoryLimitMb ?? ""}
+					/>
+				</div>
+				<p class="text-xs text-text-subtle md:col-span-2">
+					What every build on this server shares at once, 0 for no limit, memory
+					at least {settings.docker.minBuildMemoryLimitMb} MB. Leave blank to follow
+					the default. Buildpacks builds (Heroku, Paketo) aren't capped.
 				</p>
 			</div>
 		</form>

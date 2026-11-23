@@ -81,6 +81,10 @@ class SettingsApiServiceClass {
 			authCrossSubdomainCookies: row.authCrossSubdomainCookies,
 			baseDomain: row.baseDomain,
 			buildConcurrency: settings.buildConcurrency,
+			buildCpuLimit: settings.buildCpuLimit
+				? String(settings.buildCpuLimit)
+				: null,
+			buildMemoryLimitMb: settings.buildMemoryLimitMb,
 			buildOnHost: settings.buildOnHost,
 			defaultBuildServer: settings.defaultBuildServer,
 			dashboardUrl: row.authOrigin,
@@ -258,7 +262,13 @@ class SettingsApiServiceClass {
 		userId: string,
 	): Promise<void> {
 		if (
-			!sends(body, ["buildConcurrency", "buildOnHost", "defaultBuildServer"])
+			!sends(body, [
+				"buildConcurrency",
+				"buildCpuLimit",
+				"buildMemoryLimitMb",
+				"buildOnHost",
+				"defaultBuildServer",
+			])
 		) {
 			return;
 		}
@@ -268,6 +278,14 @@ class SettingsApiServiceClass {
 					body.buildConcurrency,
 					settings.buildConcurrency,
 				),
+				buildCpuLimit:
+					body.buildCpuLimit === undefined
+						? settings.buildCpuLimit
+						: Number(body.buildCpuLimit ?? 0),
+				buildMemoryLimitMb:
+					body.buildMemoryLimitMb === undefined
+						? settings.buildMemoryLimitMb
+						: (body.buildMemoryLimitMb ?? 0),
 				buildOnHost: pick(body.buildOnHost, settings.buildOnHost),
 				defaultBuildServer: pick(
 					body.defaultBuildServer,

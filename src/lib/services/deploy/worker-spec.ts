@@ -1,5 +1,8 @@
+import { buildResourceLimits } from "#lib/build-servers.js";
 import { config } from "#lib/config.js";
 import { DeploymentDTO } from "#lib/dto/deployment-dto.js";
+import { InstanceSettingsDTO } from "#lib/dto/instance-settings-dto.js";
+import { RemoteHostDTO } from "#lib/dto/remote-host-dto.js";
 import { ServiceDependencyDTO } from "#lib/dto/service-dependency-dto.js";
 import type { ServiceDTO } from "#lib/dto/service-dto.js";
 import type { StackDTO } from "#lib/dto/stack-dto.js";
@@ -204,8 +207,8 @@ function buildServerSpec(server: BuildServer) {
 /**
  * The git build part of the spec: the commit to check out (the one the
  * required status checks passed on, else the manifest's), the provider
- * credential, where it builds, the cache registry and the scan targets for
- * the image it ends up with.
+ * credential, where it builds with the CPU and memory caps its builds share,
+ * the cache registry and the scan targets for the image it ends up with.
  */
 async function buildSpec(
 	ctx: WorkerSpecContext,
@@ -223,6 +226,12 @@ async function buildSpec(
 		plan.kind !== "local-build" && plan.registry
 			? publishedImageRef(plan.registry, built)
 			: built;
+	const limits = buildResourceLimits(
+		plan.kind === "local-build"
+			? null
+			: await RemoteHostDTO.get(plan.server.hostId),
+		await InstanceSettingsDTO.get(),
+	);
 	return {
 		...built,
 		build: {
@@ -233,8 +242,10 @@ async function buildSpec(
 				),
 			),
 			commit: ctx.checkedCommit ?? ctx.manifestCommit ?? "",
+			cpuLimit: limits.cpuLimit,
 			credential: await resolveGitCredential(plan.git.gitUrl, ctx.userId),
 			git: plan.git,
+			memoryLimitMb: limits.memoryLimitMb,
 			noCache: ctx.noCache,
 			registry,
 			server: plan.kind === "local-build" ? null : buildServerSpec(plan.server),

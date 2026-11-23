@@ -67,6 +67,8 @@ type PushTarget struct {
 // the deploy target are this same agent, since the deploy then references the
 // local tag directly. Platform is the os/arch of the daemon the image deploys
 // to: when this one's differs, the build runs emulated through QEMU.
+// CPULimit (cores) and MemoryLimitMB cap what every build on this daemon
+// uses together, 0 for no cap.
 type BuildInput struct {
 	BakeFile       *string           `json:"bakeFile"`
 	BuildArgs      map[string]string `json:"buildArgs"`
@@ -74,10 +76,12 @@ type BuildInput struct {
 	BuildContext   *string           `json:"buildContext"`
 	BuildMethod    *string           `json:"buildMethod"`
 	Commit         *string           `json:"commit"`
+	CPULimit       float64           `json:"cpuLimit"`
 	Credential     *GitCredential    `json:"credential"`
 	DockerfilePath *string           `json:"dockerfilePath"`
 	GitRef         *string           `json:"gitRef"`
 	GitURL         string            `json:"gitUrl"`
+	MemoryLimitMB  int               `json:"memoryLimitMb"`
 	NoCache        bool              `json:"noCache"`
 	Platform       *string           `json:"platform"`
 	Push           *PushTarget       `json:"push"`
@@ -179,7 +183,9 @@ func (b *Builder) BuildWithProgress(ctx context.Context, input BuildInput, progr
 		BuildArgs:      input.BuildArgs,
 		BuildTarget:    valueOr(input.BuildTarget, ""),
 		BuildContext:   valueOr(input.BuildContext, ""),
+		CPULimit:       input.CPULimit,
 		DockerfilePath: valueOr(input.DockerfilePath, ""),
+		MemoryLimitMB:  input.MemoryLimitMB,
 		Method:         valueOr(input.BuildMethod, "dockerfile"),
 		NoCache:        input.NoCache,
 		Platform:       valueOr(input.Platform, ""),

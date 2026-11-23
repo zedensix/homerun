@@ -231,6 +231,8 @@
 
 	<BuildServersPanel
 		buildConcurrency={data.settings.buildConcurrency ?? 0}
+		buildCpuLimit={data.settings.buildCpuLimit}
+		buildMemoryLimitMb={data.settings.buildMemoryLimitMb}
 		buildOnHost={data.settings.buildOnHost ?? true}
 		defaultBuildServer={data.settings.defaultBuildServer ?? ""}
 		servers={data.buildServers}

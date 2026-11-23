@@ -46,6 +46,14 @@ function remoteHostResource(attr: AttributeFactory): IacResource {
 				description:
 					"How many builds run on it at once, 0 for no limit. Unset follows the instance's build_concurrency.",
 			}),
+			attr("buildCpuLimit", "string", {
+				description:
+					"The CPU cores every build on it shares, like 1.5, 0 for no limit. Unset follows the instance's build_cpu_limit.",
+			}),
+			attr("buildMemoryLimitMb", "int", {
+				description:
+					"The memory in MB every build on it shares, 0 for no limit. Unset follows the instance's build_memory_limit_mb.",
+			}),
 			attr("agentTokenSet", "bool", readOnly),
 			attr("tlsCaSet", "bool", readOnly),
 			attr("tlsCertSet", "bool", readOnly),

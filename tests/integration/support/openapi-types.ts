@@ -7596,6 +7596,8 @@ export interface operations {
 						authCrossSubdomainCookies: boolean | null;
 						baseDomain: string | null;
 						buildConcurrency: number;
+						buildCpuLimit: string | null;
+						buildMemoryLimitMb: number;
 						buildOnHost: boolean;
 						cpuHardThreshold: number;
 						cpuSoftThreshold: number;
@@ -7676,6 +7678,10 @@ export interface operations {
 					baseDomain?: string | null;
 					/** @description How many builds each build server runs at once unless it sets its own limit, 0 to 64, 0 for no limit. */
 					buildConcurrency?: number;
+					/** @description The CPU cores every build on a server shares unless the server sets its own, like 1.5. Null or 0 for no limit. Answered as a string. */
+					buildCpuLimit?: (number | string) | null;
+					/** @description The memory in MB every build on a server shares unless the server sets its own, 0 for no limit, else at least 256. */
+					buildMemoryLimitMb?: number | null;
 					/** @description Whether git builds may run on this host while build servers are registered. Off sends every build to a build server. */
 					buildOnHost?: boolean;
 					/** @description A usage percentage that alerts, 1 to 100. */
@@ -7742,6 +7748,8 @@ export interface operations {
 						authCrossSubdomainCookies: boolean | null;
 						baseDomain: string | null;
 						buildConcurrency: number;
+						buildCpuLimit: string | null;
+						buildMemoryLimitMb: number;
 						buildOnHost: boolean;
 						cpuHardThreshold: number;
 						cpuSoftThreshold: number;
@@ -14813,6 +14821,8 @@ export interface operations {
 					"application/json": {
 						agentTokenSet: boolean;
 						agentUrl: string | null;
+						buildCpuLimit: string | null;
+						buildMemoryLimitMb: number | null;
 						/** @description ISO 8601 timestamp */
 						createdAt: string;
 						dockerHost: string | null;
@@ -14871,6 +14881,10 @@ export interface operations {
 					agentToken?: string;
 					/** @description The agent's base URL (kind agent), e.g. http://10.0.0.5:7420. */
 					agentUrl?: string;
+					/** @description The CPU cores every build on it shares, like 1.5, 0 for no limit. Null follows the instance's buildCpuLimit. Answered as a string. */
+					buildCpuLimit?: (number | string) | null;
+					/** @description The memory in MB every build on it shares, 0 for no limit, else at least 256. Null follows the instance's buildMemoryLimitMb. */
+					buildMemoryLimitMb?: number | null;
 					/** @description The Docker daemon (kind docker): tcp://host:2376 or ssh://user@host. */
 					dockerHost?: string;
 					/**
@@ -14900,6 +14914,8 @@ export interface operations {
 					"application/json": {
 						agentTokenSet: boolean;
 						agentUrl: string | null;
+						buildCpuLimit: string | null;
+						buildMemoryLimitMb: number | null;
 						/** @description ISO 8601 timestamp */
 						createdAt: string;
 						dockerHost: string | null;
@@ -14977,6 +14993,8 @@ export interface operations {
 					"application/json": {
 						agentTokenSet: boolean;
 						agentUrl: string | null;
+						buildCpuLimit: string | null;
+						buildMemoryLimitMb: number | null;
 						/** @description ISO 8601 timestamp */
 						createdAt: string;
 						dockerHost: string | null;
@@ -15107,6 +15125,10 @@ export interface operations {
 					agentToken?: string;
 					/** @description The agent's base URL (kind agent), e.g. http://10.0.0.5:7420. */
 					agentUrl?: string;
+					/** @description The CPU cores every build on it shares, like 1.5, 0 for no limit. Null follows the instance's buildCpuLimit. Answered as a string. */
+					buildCpuLimit?: (number | string) | null;
+					/** @description The memory in MB every build on it shares, 0 for no limit, else at least 256. Null follows the instance's buildMemoryLimitMb. */
+					buildMemoryLimitMb?: number | null;
 					/** @description The Docker daemon (kind docker): tcp://host:2376 or ssh://user@host. */
 					dockerHost?: string;
 					/** @description Whether new builds and workstations may land on it. A disabled host keeps what already runs there. */
@@ -15133,6 +15155,8 @@ export interface operations {
 					"application/json": {
 						agentTokenSet: boolean;
 						agentUrl: string | null;
+						buildCpuLimit: string | null;
+						buildMemoryLimitMb: number | null;
 						/** @description ISO 8601 timestamp */
 						createdAt: string;
 						dockerHost: string | null;

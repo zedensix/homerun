@@ -1,10 +1,13 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+	buildResourceLimits,
 	buildServerCandidates,
 	buildServerChoice,
 	buildServerPick,
 	isBuildConcurrency,
+	isBuildCpuLimit,
+	isBuildMemoryLimit,
 	pickBuildServer,
 } from "../../../src/lib/build-servers";
 import { settings } from "../../../src/lib/settings";
@@ -151,5 +154,39 @@ describe("isBuildConcurrency", () => {
 		expect(isBuildConcurrency(-1)).toBe(false);
 		expect(isBuildConcurrency(1.5)).toBe(false);
 		expect(isBuildConcurrency(Number.NaN)).toBe(false);
+	});
+});
+
+describe("build resource limits", () => {
+	test("CPUs take 0 to the maximum, fractions included", () => {
+		expect(isBuildCpuLimit(0)).toBe(true);
+		expect(isBuildCpuLimit(1.5)).toBe(true);
+		expect(isBuildCpuLimit(settings.docker.maxBuildCpuLimit)).toBe(true);
+		expect(isBuildCpuLimit(settings.docker.maxBuildCpuLimit + 1)).toBe(false);
+		expect(isBuildCpuLimit(-0.5)).toBe(false);
+		expect(isBuildCpuLimit(Number.NaN)).toBe(false);
+	});
+
+	test("memory takes 0 or a whole number from the minimum", () => {
+		const min = settings.docker.minBuildMemoryLimitMb;
+		expect(isBuildMemoryLimit(0)).toBe(true);
+		expect(isBuildMemoryLimit(min)).toBe(true);
+		expect(isBuildMemoryLimit(min - 1)).toBe(false);
+		expect(isBuildMemoryLimit(2048.5)).toBe(false);
+		expect(isBuildMemoryLimit(-1)).toBe(false);
+	});
+
+	test("a server's own cap wins over the instance's, 0 included", () => {
+		const instance = { buildCpuLimit: 2, buildMemoryLimitMb: 4096 };
+		expect(buildResourceLimits(null, instance)).toEqual({
+			cpuLimit: 2,
+			memoryLimitMb: 4096,
+		});
+		expect(
+			buildResourceLimits(
+				{ buildCpuLimit: 0, buildMemoryLimitMb: null },
+				instance,
+			),
+		).toEqual({ cpuLimit: 0, memoryLimitMb: 4096 });
 	});
 });

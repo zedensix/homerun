@@ -8,6 +8,8 @@ export function blankInstanceSettings(id: string, now: Date): InstanceSettings {
 	return {
 		authCheckUrl: null,
 		buildConcurrency: null,
+		buildCpuLimit: null,
+		buildMemoryLimitMb: null,
 		buildOnHost: null,
 		defaultBuildServer: null,
 		authCrossSubdomainCookies: null,

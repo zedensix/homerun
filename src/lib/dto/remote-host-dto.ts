@@ -22,6 +22,8 @@ import { InstanceSettingsDTO } from "./instance-settings-dto";
 export interface NewRemoteHostInput {
 	agentTokenEnc?: string | null;
 	agentUrl?: string | null;
+	buildCpuLimit?: number | null;
+	buildMemoryLimitMb?: number | null;
 	dockerHost?: string | null;
 	kind?: RemoteHost["kind"];
 	maxConcurrentBuilds?: number | null;
@@ -37,6 +39,8 @@ export type RemoteHostUpdateInput = Partial<
 		RemoteHost,
 		| "agentTokenEnc"
 		| "agentUrl"
+		| "buildCpuLimit"
+		| "buildMemoryLimitMb"
 		| "dockerHost"
 		| "enabled"
 		| "kind"
@@ -193,6 +197,8 @@ export class RemoteHostDTO extends BaseDTO<RemoteHost> {
 		const row: RemoteHost = {
 			agentTokenEnc: input.agentTokenEnc ?? null,
 			agentUrl: input.agentUrl ?? null,
+			buildCpuLimit: input.buildCpuLimit ?? null,
+			buildMemoryLimitMb: input.buildMemoryLimitMb ?? null,
 			createdAt: now,
 			dockerHost: input.dockerHost ?? null,
 			enabled: true,
@@ -312,6 +318,16 @@ export class RemoteHostDTO extends BaseDTO<RemoteHost> {
 	/** This host's own concurrent-build limit, null to follow the instance default. */
 	get maxConcurrentBuilds(): number | null {
 		return this.row.maxConcurrentBuilds;
+	}
+
+	/** The CPU cores builds on this server share, 0 for no cap, null to follow the instance's. */
+	get buildCpuLimit(): number | null {
+		return this.row.buildCpuLimit;
+	}
+
+	/** The memory in MB builds on this server share, 0 for no cap, null to follow the instance's. */
+	get buildMemoryLimitMb(): number | null {
+		return this.row.buildMemoryLimitMb;
 	}
 	/** Whether the host is a raw Docker daemon or a Homerun Agent. */
 	get kind(): RemoteHost["kind"] {

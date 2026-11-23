@@ -11,6 +11,7 @@ describe("infrastructure REST shapes", () => {
 	test("a remote host says which secrets are set instead of carrying them", () => {
 		const json = remoteHostApiJson({
 			agentTokenEnc: "enc",
+			buildCpuLimit: 1.5,
 			id: "h1",
 			name: "box",
 			sshHost: "box.example.com",
@@ -23,6 +24,7 @@ describe("infrastructure REST shapes", () => {
 		} as never);
 		expect(json).toEqual({
 			agentTokenSet: true,
+			buildCpuLimit: "1.5",
 			id: "h1",
 			name: "box",
 			tlsCaSet: false,

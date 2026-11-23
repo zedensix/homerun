@@ -143,6 +143,7 @@ var (
 			"buildContext": nullableString,
 			"buildMethod":  object{"enum": append(toAny(Tools.BuildMethods), nil)},
 			"commit":       object{"pattern": "^[0-9a-f]{40}$", "type": []string{"string", "null"}},
+			"cpuLimit":     object{"minimum": 0, "type": "number"},
 			"credential": object{
 				"properties": object{"token": object{"minLength": 1, "type": "string"}, "username": object{"type": "string"}},
 				"required":   []string{"token", "username"},
@@ -151,6 +152,7 @@ var (
 			"dockerfilePath": nullableString,
 			"gitRef":         nullableString,
 			"gitUrl":         object{"minLength": 1, "type": "string"},
+			"memoryLimitMb":  object{"minimum": 0, "type": "integer"},
 			"noCache":        object{"type": "boolean"},
 			"platform":       object{"pattern": "^[a-z0-9]+/[a-z0-9]+$", "type": []string{"string", "null"}},
 			"push": object{

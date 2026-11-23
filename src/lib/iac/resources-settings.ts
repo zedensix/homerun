@@ -94,6 +94,14 @@ export const IAC_SETTINGS_RESOURCES: IacResource[] = [
 				description:
 					"How many builds each build server runs at once unless it sets its own limit, 0 for no limit.",
 			}),
+			setting("buildCpuLimit", "string", {
+				description:
+					"The CPU cores every build on a server shares unless the server sets its own, like 1.5. Unset for no limit.",
+			}),
+			setting("buildMemoryLimitMb", "int", {
+				description:
+					"The memory in MB every build on a server shares unless the server sets its own, 0 for no limit.",
+			}),
 			setting("buildOnHost", "bool", {
 				description:
 					"Whether git builds may run on this host while build servers are registered.",

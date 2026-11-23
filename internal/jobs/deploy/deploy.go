@@ -115,14 +115,16 @@ type Revision struct {
 // reaches this host. Registry is the build cache registry, used for the layer
 // cache and, on a build server, to publish the image through.
 type BuildSpec struct {
-	AuthHint   string               `json:"authHint"`
-	BuildArgs  map[string]string    `json:"buildArgs"`
-	Commit     string               `json:"commit"`
-	Credential *agent.GitCredential `json:"credential"`
-	Git        GitSource            `json:"git"`
-	NoCache    bool                 `json:"noCache"`
-	Registry   *Registry            `json:"registry"`
-	Server     *BuildServer         `json:"server"`
+	AuthHint      string               `json:"authHint"`
+	BuildArgs     map[string]string    `json:"buildArgs"`
+	Commit        string               `json:"commit"`
+	CPULimit      float64              `json:"cpuLimit"`
+	Credential    *agent.GitCredential `json:"credential"`
+	Git           GitSource            `json:"git"`
+	MemoryLimitMB int                  `json:"memoryLimitMb"`
+	NoCache       bool                 `json:"noCache"`
+	Registry      *Registry            `json:"registry"`
+	Server        *BuildServer         `json:"server"`
 }
 
 // GitSource is the repository and build settings of a git build.

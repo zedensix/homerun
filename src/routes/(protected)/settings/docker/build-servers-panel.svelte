@@ -19,13 +19,21 @@
 
 	interface Props {
 		buildConcurrency: number;
+		buildCpuLimit: number | null;
+		buildMemoryLimitMb: number | null;
 		buildOnHost: boolean;
 		defaultBuildServer: string;
 		servers: { id: string; name: string }[];
 	}
 
-	const { buildConcurrency, buildOnHost, defaultBuildServer, servers }: Props =
-		$props();
+	const {
+		buildConcurrency,
+		buildCpuLimit,
+		buildMemoryLimitMb,
+		buildOnHost,
+		defaultBuildServer,
+		servers,
+	}: Props = $props();
 
 	let defaultServer = $state(untrack(() => defaultBuildServer));
 	const defaultServerName = $derived(
@@ -68,6 +76,41 @@
 			<p class="text-text-subtle mt-1.5 text-xs">
 				0 for no limit. A server can set its own on its page. A deploy that
 				finds its server full waits for a free slot.
+			</p>
+		</div>
+		<div class="grid gap-4 md:grid-cols-2">
+			<div>
+				<Label class="mb-1.5" for="buildCpuLimit">Build CPUs per server</Label>
+				<Input
+					id="buildCpuLimit"
+					max={settings.docker.maxBuildCpuLimit}
+					min={0}
+					name="buildCpuLimit"
+					placeholder="No limit"
+					step="0.1"
+					type="number"
+					value={buildCpuLimit ?? ""}
+				/>
+			</div>
+			<div>
+				<Label class="mb-1.5" for="buildMemoryLimitMb">
+					Build memory per server (MB)
+				</Label>
+				<Input
+					id="buildMemoryLimitMb"
+					min={0}
+					name="buildMemoryLimitMb"
+					placeholder="No limit"
+					step="1"
+					type="number"
+					value={buildMemoryLimitMb ?? ""}
+				/>
+			</div>
+			<p class="text-text-subtle text-xs md:col-span-2">
+				What every build running on a server shares at once, so a build can't
+				starve the services next to it. Blank or 0 for no limit, memory at least
+				{settings.docker.minBuildMemoryLimitMb} MB. A build that needs more memory
+				fails instead of swapping. Buildpacks builds (Heroku, Paketo) aren't capped.
 			</p>
 		</div>
 		<div>

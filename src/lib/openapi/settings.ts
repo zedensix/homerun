@@ -43,6 +43,8 @@ export const instanceSettingsResponse = z.object({
 	authCrossSubdomainCookies: z.boolean().nullable(),
 	baseDomain: nullableText,
 	buildConcurrency: z.number().int(),
+	buildCpuLimit: nullableText,
+	buildMemoryLimitMb: z.number().int(),
 	buildOnHost: z.boolean(),
 	defaultBuildServer: z.string(),
 	serviceSubdomain: nullableText,

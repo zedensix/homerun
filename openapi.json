@@ -9006,6 +9006,14 @@
 											"minimum": -9007199254740991,
 											"type": "integer"
 										},
+										"buildCpuLimit": {
+											"type": ["string", "null"]
+										},
+										"buildMemoryLimitMb": {
+											"maximum": 9007199254740991,
+											"minimum": -9007199254740991,
+											"type": "integer"
+										},
 										"buildOnHost": {
 											"type": "boolean"
 										},
@@ -9132,6 +9140,8 @@
 										"authCrossSubdomainCookies",
 										"baseDomain",
 										"buildConcurrency",
+										"buildCpuLimit",
+										"buildMemoryLimitMb",
 										"buildOnHost",
 										"defaultBuildServer",
 										"serviceSubdomain",
@@ -9242,6 +9252,40 @@
 										"maximum": 9007199254740991,
 										"minimum": -9007199254740991,
 										"type": "integer"
+									},
+									"buildCpuLimit": {
+										"anyOf": [
+											{
+												"anyOf": [
+													{
+														"maximum": 256,
+														"minimum": 0,
+														"type": "number"
+													},
+													{
+														"pattern": "^\\d+(\\.\\d+)?$",
+														"type": "string"
+													}
+												]
+											},
+											{
+												"type": "null"
+											}
+										],
+										"description": "The CPU cores every build on a server shares unless the server sets its own, like 1.5. Null or 0 for no limit. Answered as a string."
+									},
+									"buildMemoryLimitMb": {
+										"anyOf": [
+											{
+												"maximum": 9007199254740991,
+												"minimum": 0,
+												"type": "integer"
+											},
+											{
+												"type": "null"
+											}
+										],
+										"description": "The memory in MB every build on a server shares unless the server sets its own, 0 for no limit, else at least 256."
 									},
 									"buildOnHost": {
 										"description": "Whether git builds may run on this host while build servers are registered. Off sends every build to a build server.",
@@ -9407,6 +9451,14 @@
 											"minimum": -9007199254740991,
 											"type": "integer"
 										},
+										"buildCpuLimit": {
+											"type": ["string", "null"]
+										},
+										"buildMemoryLimitMb": {
+											"maximum": 9007199254740991,
+											"minimum": -9007199254740991,
+											"type": "integer"
+										},
 										"buildOnHost": {
 											"type": "boolean"
 										},
@@ -9533,6 +9585,8 @@
 										"authCrossSubdomainCookies",
 										"baseDomain",
 										"buildConcurrency",
+										"buildCpuLimit",
+										"buildMemoryLimitMb",
 										"buildOnHost",
 										"defaultBuildServer",
 										"serviceSubdomain",
@@ -24025,6 +24079,21 @@
 											"agentUrl": {
 												"type": ["string", "null"]
 											},
+											"buildCpuLimit": {
+												"type": ["string", "null"]
+											},
+											"buildMemoryLimitMb": {
+												"anyOf": [
+													{
+														"maximum": 9007199254740991,
+														"minimum": -9007199254740991,
+														"type": "integer"
+													},
+													{
+														"type": "null"
+													}
+												]
+											},
 											"createdAt": {
 												"description": "ISO 8601 timestamp",
 												"type": "string"
@@ -24077,6 +24146,8 @@
 										"required": [
 											"agentTokenSet",
 											"agentUrl",
+											"buildCpuLimit",
+											"buildMemoryLimitMb",
 											"createdAt",
 											"dockerHost",
 											"enabled",
@@ -24163,6 +24234,40 @@
 										"description": "The agent's base URL (kind agent), e.g. http://10.0.0.5:7420.",
 										"type": "string"
 									},
+									"buildCpuLimit": {
+										"anyOf": [
+											{
+												"anyOf": [
+													{
+														"maximum": 256,
+														"minimum": 0,
+														"type": "number"
+													},
+													{
+														"pattern": "^\\d+(\\.\\d+)?$",
+														"type": "string"
+													}
+												]
+											},
+											{
+												"type": "null"
+											}
+										],
+										"description": "The CPU cores every build on it shares, like 1.5, 0 for no limit. Null follows the instance's buildCpuLimit. Answered as a string."
+									},
+									"buildMemoryLimitMb": {
+										"anyOf": [
+											{
+												"maximum": 9007199254740991,
+												"minimum": 0,
+												"type": "integer"
+											},
+											{
+												"type": "null"
+											}
+										],
+										"description": "The memory in MB every build on it shares, 0 for no limit, else at least 256. Null follows the instance's buildMemoryLimitMb."
+									},
 									"dockerHost": {
 										"description": "The Docker daemon (kind docker): tcp://host:2376 or ssh://user@host.",
 										"type": "string"
@@ -24223,6 +24328,21 @@
 										"agentUrl": {
 											"type": ["string", "null"]
 										},
+										"buildCpuLimit": {
+											"type": ["string", "null"]
+										},
+										"buildMemoryLimitMb": {
+											"anyOf": [
+												{
+													"maximum": 9007199254740991,
+													"minimum": -9007199254740991,
+													"type": "integer"
+												},
+												{
+													"type": "null"
+												}
+											]
+										},
 										"createdAt": {
 											"description": "ISO 8601 timestamp",
 											"type": "string"
@@ -24275,6 +24395,8 @@
 									"required": [
 										"agentTokenSet",
 										"agentUrl",
+										"buildCpuLimit",
+										"buildMemoryLimitMb",
 										"createdAt",
 										"dockerHost",
 										"enabled",
@@ -24470,6 +24592,21 @@
 										"agentUrl": {
 											"type": ["string", "null"]
 										},
+										"buildCpuLimit": {
+											"type": ["string", "null"]
+										},
+										"buildMemoryLimitMb": {
+											"anyOf": [
+												{
+													"maximum": 9007199254740991,
+													"minimum": -9007199254740991,
+													"type": "integer"
+												},
+												{
+													"type": "null"
+												}
+											]
+										},
 										"createdAt": {
 											"description": "ISO 8601 timestamp",
 											"type": "string"
@@ -24522,6 +24659,8 @@
 									"required": [
 										"agentTokenSet",
 										"agentUrl",
+										"buildCpuLimit",
+										"buildMemoryLimitMb",
 										"createdAt",
 										"dockerHost",
 										"enabled",
@@ -24634,6 +24773,40 @@
 										"description": "The agent's base URL (kind agent), e.g. http://10.0.0.5:7420.",
 										"type": "string"
 									},
+									"buildCpuLimit": {
+										"anyOf": [
+											{
+												"anyOf": [
+													{
+														"maximum": 256,
+														"minimum": 0,
+														"type": "number"
+													},
+													{
+														"pattern": "^\\d+(\\.\\d+)?$",
+														"type": "string"
+													}
+												]
+											},
+											{
+												"type": "null"
+											}
+										],
+										"description": "The CPU cores every build on it shares, like 1.5, 0 for no limit. Null follows the instance's buildCpuLimit. Answered as a string."
+									},
+									"buildMemoryLimitMb": {
+										"anyOf": [
+											{
+												"maximum": 9007199254740991,
+												"minimum": 0,
+												"type": "integer"
+											},
+											{
+												"type": "null"
+											}
+										],
+										"description": "The memory in MB every build on it shares, 0 for no limit, else at least 256. Null follows the instance's buildMemoryLimitMb."
+									},
 									"dockerHost": {
 										"description": "The Docker daemon (kind docker): tcp://host:2376 or ssh://user@host.",
 										"type": "string"
@@ -24692,6 +24865,21 @@
 										"agentUrl": {
 											"type": ["string", "null"]
 										},
+										"buildCpuLimit": {
+											"type": ["string", "null"]
+										},
+										"buildMemoryLimitMb": {
+											"anyOf": [
+												{
+													"maximum": 9007199254740991,
+													"minimum": -9007199254740991,
+													"type": "integer"
+												},
+												{
+													"type": "null"
+												}
+											]
+										},
 										"createdAt": {
 											"description": "ISO 8601 timestamp",
 											"type": "string"
@@ -24744,6 +24932,8 @@
 									"required": [
 										"agentTokenSet",
 										"agentUrl",
+										"buildCpuLimit",
+										"buildMemoryLimitMb",
 										"createdAt",
 										"dockerHost",
 										"enabled",

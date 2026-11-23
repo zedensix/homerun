@@ -209,6 +209,29 @@ func TestBuilderEnvPlatform(t *testing.T) {
 	}
 }
 
+func TestBuilderEnvResourceLimits(t *testing.T) {
+	input := agent.BuilderInput{Method: "dockerfile", RepoDir: "/workspace/repo", Tag: "svc:abc"}
+	env, err := agent.BuilderEnv(input)
+	if err != nil || slices.ContainsFunc(env, func(entry string) bool {
+		return strings.HasPrefix(entry, "BUILD_CPU_QUOTA=") || strings.HasPrefix(entry, "BUILD_MEMORY=")
+	}) {
+		t.Errorf("no limits leave the build uncapped, got %v %v", env, err)
+	}
+	input.CPULimit = 1.5
+	input.MemoryLimitMB = 2048
+	env, err = agent.BuilderEnv(input)
+	if err != nil || !slices.Contains(env, "BUILD_CPU_QUOTA=150000") || !slices.Contains(env, "BUILD_MEMORY=2048m") {
+		t.Errorf("got %v %v", env, err)
+	}
+	if got := env[len(env)-2:]; got[0] != "BUILD_CPU_QUOTA=150000" || got[1] != "BUILD_MEMORY=2048m" {
+		t.Errorf("the limits come last, got %v", got)
+	}
+	input.CPULimit = -1
+	if _, err := agent.BuilderEnv(input); err == nil {
+		t.Error("a negative limit is refused")
+	}
+}
+
 func TestBuildCacheRef(t *testing.T) {
 	got := agent.BuildCacheRef(agent.CacheRegistry{RegistryURL: "registry.example.com/"}, "svc:abc")
 	if got != "registry.example.com/svc:buildcache" {

@@ -95,10 +95,12 @@ func (r *run) buildInput(tag string) agent.BuildInput {
 		BuildTarget:    build.Git.BuildTarget,
 		BuildContext:   build.Git.BuildContext,
 		BuildMethod:    build.Git.BuildMethod,
+		CPULimit:       build.CPULimit,
 		Credential:     build.Credential,
 		DockerfilePath: build.Git.DockerfilePath,
 		GitRef:         build.Git.GitRef,
 		GitURL:         build.Git.GitURL,
+		MemoryLimitMB:  build.MemoryLimitMB,
 		NoCache:        build.NoCache,
 		Tag:            tag,
 	}
