@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.82](https://github.com/zedensix/homerun/compare/v1.0.81...v1.0.82) (2026-11-23)
+
+### Features
+
+* **templates:** add 70 built-in templates, a {{host}} token, and wait for a container's first healthcheck before the route check ([95c1a09](https://github.com/zedensix/homerun/commit/95c1a09e84a6d48fae544ef8f6be57cc01f9bb75))
+* live update dialog with steps, logs and container pings; separate build limits for this host and remote servers, shown against each machine's total ([1ac7e38](https://github.com/zedensix/homerun/commit/1ac7e382f7ed812eec6d8f54c1eaf89bf3d3f2d6))
+* **builds:** cap the CPU and memory git builds share on each build server ([2885d37](https://github.com/zedensix/homerun/commit/2885d37696cac5637647958fed4351058dc87529))
+* **deploy:** stop dependent services and verify row counts during Postgres upgrades; list commits in nightly and canary release notes ([68c6b05](https://github.com/zedensix/homerun/commit/68c6b0507ffe8765f242d36f4266b37c31891ac6))
+* **deploy:** upgrade Postgres data across major versions on deploy and in update trials ([36e31df](https://github.com/zedensix/homerun/commit/36e31df4a674e1cb44cf13d149f763462c29b5cc))
+* **channels:** canary env inherits like previews, with hostname rewrite and overrides (#219) ([06ad7df](https://github.com/zedensix/homerun/commit/06ad7df6f51c43de63ca0f1caa1c8dcd1b900390))
+
+### Bug Fixes
+
+* **templates:** load the GitHub readme with a remote query so hover preloading stops hitting the rate limit ([2ddeb27](https://github.com/zedensix/homerun/commit/2ddeb273ade25caec5b8e1b8cf337989f6f1e61b))
+* updater screen (docker ids) ([9a50394](https://github.com/zedensix/homerun/commit/9a503944db749476f7855ecba683cc3fc735ef2c))
+* **deploy:** pull a mirror-pinned image before checking it for a Postgres upgrade; name the stack in service titles and dashboard alerts ([41e96e4](https://github.com/zedensix/homerun/commit/41e96e454cebc6613cd39f6765bd411c09c34086))
+* **deploy:** move a Postgres volume mounted outside the new major's data directory during the upgrade, and skip per-database PG_VERSION files ([951650e](https://github.com/zedensix/homerun/commit/951650e88ffe9034058e2ddce97113001a2dbe66))
+* **deploy:** run the Postgres upgrade as the old cluster's owner so Alpine and Debian images can dump each other's data ([4fe8a1d](https://github.com/zedensix/homerun/commit/4fe8a1dcc42ca84897776451f032507c83cca432))
+
+### Documentation
+
+* accept CPUs in the Vale vocabulary ([6cac7d0](https://github.com/zedensix/homerun/commit/6cac7d03a2bc484c2a88299a843f1cf6e8d5928a))
+
 ## [1.0.81](https://github.com/zedensix/homerun/compare/v1.0.80...v1.0.81) (2026-11-17)
 
 ### Bug Fixes
