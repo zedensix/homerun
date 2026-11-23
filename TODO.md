@@ -7,6 +7,10 @@ When done delete the entry, no bloat.
 
 ## Small
 
+- [ ] The template page's Repository/Readme panel calls the GitHub API
+      unauthenticated (60 requests an hour per IP, 3 per template), shared with
+      the self-update check; send a token when a GitHub git provider is
+      connected.
 - [ ] The CLI's `services channels enable` has no flags for the canary's env
       inheritance and overrides yet; the API, MCP tool, Terraform provider and
       Channels tab have them.

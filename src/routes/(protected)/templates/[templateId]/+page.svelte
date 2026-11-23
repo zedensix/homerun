@@ -18,6 +18,7 @@
 	import Alert from "#lib/components/alert.svelte";
 	import TemplateIcon from "#lib/components/template-icon.svelte";
 	import { timeAgo } from "#lib/formatting.js";
+	import { getTemplateRepo } from "#lib/remote/template-repo.remote.js";
 	import { runtimeOptionsSummary } from "#lib/service-runtime.js";
 	import { title } from "#lib/store/title.js";
 	import { enhanceToast } from "#lib/toast.js";
@@ -242,7 +243,7 @@
 	{/if}
 
 	{#if tmpl.sourceUrl}
-		{#await data.github then repo}
+		{#await getTemplateRepo(tmpl.id) then repo}
 			{#if repo}
 				<div class="rounded-md panel p-5">
 					<h2 class="eyebrow mb-3">Repository</h2>

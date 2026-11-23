@@ -6,7 +6,6 @@ import { TemplateDTO } from "#lib/dto/template-dto.js";
 import { TemplateLinkDTO } from "#lib/dto/template-link-dto.js";
 import { can } from "#lib/permissions.js";
 import { redirectToSignIn } from "#lib/server/sign-in-redirect.js";
-import { getGitHubRepoInfo } from "#lib/services/github-repo.service.js";
 import {
 	quickDeployFromTemplate,
 	templateHostAccessRefusal,
@@ -28,7 +27,6 @@ export const load = async ({ params, parent, url, locals }) => {
 	const templateJson = tmpl.toJSON();
 
 	return {
-		github: getGitHubRepoInfo(templateJson.sourceUrl),
 		hostAccessRefusal: templateHostAccessRefusal(
 			tmpl,
 			links.map((l) => ({
