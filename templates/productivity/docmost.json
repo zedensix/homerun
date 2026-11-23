@@ -1,0 +1,29 @@
+{
+	"$schema": "../schema.json",
+	"name": "Docmost",
+	"description": "Collaborative wiki and docs with real-time editing, spaces, permissions and diagrams, a Confluence or Notion alternative. Comes with a linked Postgres and Redis; the first account you create owns the workspace.",
+	"image": "docmost/docmost",
+	"tag": "latest",
+	"containerPort": 3000,
+	"icon": "di:docmost",
+	"tags": ["wiki", "documentation", "notes", "collaboration"],
+	"websiteUrl": "https://docmost.com",
+	"sourceUrl": "https://github.com/docmost/docmost",
+	"envVars": {
+		"APP_SECRET": "{{secret}}",
+		"APP_URL": "{{url}}",
+		"DATABASE_URL": "postgresql://{{db.POSTGRES_USER}}:{{db.POSTGRES_PASSWORD}}@{{db}}:5432/{{db.POSTGRES_DB}}?schema=public",
+		"REDIS_URL": "redis://:{{redis.REDIS_PASSWORD}}@{{redis}}:6379"
+	},
+	"volumes": ["/app/data/storage"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "postgres"
+		},
+		{
+			"alias": "redis",
+			"template": "redis"
+		}
+	]
+}

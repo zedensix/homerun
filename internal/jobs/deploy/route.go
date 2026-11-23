@@ -465,14 +465,20 @@ func (r *run) checkHost(ctx context.Context, addr string, host RouteHost, timing
 	return lines, ""
 }
 
-// checkRoutes probes every routed hostname once the workload runs, all at
-// once, and fails the deploy with FailureRouteFailed when Traefik or the edge
+// checkRoutes probes every routed hostname once the workload runs and, for a
+// container, once its healthcheck has reported, all at once, and fails the deploy with FailureRouteFailed when Traefik or the edge
 // answers one with its own error or the edge's default certificate. A local
 // Traefik the worker can't reach skips the local half with a warning.
 func (r *run) checkRoutes(ctx context.Context) error {
 	route := r.spec.Route
 	if route == nil || len(route.Hosts) == 0 {
 		return nil
+	}
+	if id := r.result.ContainerID; id != "" {
+		AwaitFirstHealthcheck(ctx, func(ctx context.Context) (Sample, error) {
+			info, err := r.docker.InspectContainer(ctx, id)
+			return SampleFromInspect(info), err
+		}, rolloutPoll, rolloutMaxWait)
 	}
 	addr, err := r.traefikAddress(ctx, route.Entrypoint)
 	if err != nil {

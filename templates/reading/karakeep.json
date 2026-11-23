@@ -1,0 +1,26 @@
+{
+	"$schema": "../schema.json",
+	"name": "Karakeep",
+	"description": "Bookmark everything (links, notes, images and PDFs) with full-text search through the linked Meilisearch and optional AI tagging. Formerly Hoarder; the first account you create is the admin.",
+	"image": "ghcr.io/karakeep-app/karakeep",
+	"tag": "release",
+	"containerPort": 3000,
+	"icon": "di:karakeep",
+	"tags": ["bookmarks", "read-later", "archive", "hoarder"],
+	"websiteUrl": "https://karakeep.app",
+	"sourceUrl": "https://github.com/karakeep-app/karakeep",
+	"envVars": {
+		"DATA_DIR": "/data",
+		"MEILI_ADDR": "http://{{search}}:7700",
+		"MEILI_MASTER_KEY": "{{search.MEILI_MASTER_KEY}}",
+		"NEXTAUTH_SECRET": "{{secret}}",
+		"NEXTAUTH_URL": "{{url}}"
+	},
+	"volumes": ["/data"],
+	"links": [
+		{
+			"alias": "search",
+			"template": "meilisearch"
+		}
+	]
+}

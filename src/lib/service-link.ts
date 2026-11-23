@@ -99,13 +99,19 @@ const IMAGE_MATCHERS: Array<[RegExp, LinkEngineId]> = [
 	[/(^|\/).*(rabbitmq).*/, "rabbitmq"],
 ];
 
+const DATASTORE_CLIENTS = /(^|\/)(mongo-express|redisinsight)(:|$)/;
+
 /**
  * Guesses which datastore a service runs from its image name (Postgres and its
  * forks, MySQL/Percona, MariaDB, MongoDB, Redis-compatibles, RabbitMQ), falling
- * back to a generic HTTP service.
+ * back to a generic HTTP service, which is also what a datastore's own web
+ * client (Mongo Express, Redis Insight) is.
  */
 export function detectLinkEngine(image: string): LinkEngine {
 	const normalized = image.toLowerCase();
+	if (DATASTORE_CLIENTS.test(normalized)) {
+		return ENGINES.generic;
+	}
 	for (const [pattern, id] of IMAGE_MATCHERS) {
 		if (pattern.test(normalized)) {
 			return ENGINES[id];

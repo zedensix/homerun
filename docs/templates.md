@@ -6,19 +6,23 @@ command, labels, run-as user, env files, added capabilities, devices and
 privileged mode) you can deploy from repeatedly without re-entering everything.
 Two kinds:
 
-- **Built-in**, a catalog of ~150 common self-hosted apps, media (Immich,
-  Jellyfin, Plex, Navidrome, the *arr stack, qBittorrent), databases and caches
-  (PostgreSQL, MySQL, MongoDB, Redis), networking (Pi-hole, AdGuard Home, Nginx
-  Proxy Manager), monitoring (Uptime Kuma, Grafana, Prometheus, Gatus,
-  Healthchecks), dashboards (Homepage, Dashy, Homarr, Portainer), productivity
-  (Vaultwarden, Trilium, Wiki.js, BookStack, Vikunja, NocoDB, Excalidraw,
-  PrivateBin), tools (CyberChef, PairDrop, LibreSpeed, RSS-Bridge), identity
-  (Keycloak, Pocket ID), git forges (Gitea, Forgejo),
-  [MCP servers](#mcp-servers) for many of those, and more. Seeded on every boot
-  (idempotent), immutable, available to every account. Each carries its real app
-  logo, most of them from [Dashboard Icons](#icons) and a few bundled with
-  Homerun; an app with no official logo falls back to a colored icon for its
-  category.
+- **Built-in**, a catalog of ~220 common self-hosted apps, media (Immich,
+  Jellyfin, Emby, Plex, Navidrome, the *arr stack, qBittorrent), databases and
+  caches (PostgreSQL, MySQL, MariaDB, MongoDB, Redis, ClickHouse, Meilisearch,
+  Qdrant) with their admin consoles (pgAdmin, CloudBeaver, Mongo Express),
+  networking (Pi-hole, AdGuard Home, Nginx Proxy Manager), monitoring (Uptime
+  Kuma, Grafana, Prometheus, Loki, Netdata, Gatus, GlitchTip), analytics (Umami,
+  Plausible, Matomo), dashboards (Homepage, Dashy, Homarr, Portainer),
+  productivity (Vaultwarden, Trilium, Wiki.js, BookStack, Docmost, Planka,
+  Vikunja, NocoDB, Baserow, Excalidraw, PrivateBin), bookmarks (Karakeep,
+  Linkwarden, Readeck), content management (WordPress, Ghost, Directus, Drupal,
+  Joomla), tools (CyberChef, PairDrop, LibreSpeed, RSS-Bridge), identity
+  (Keycloak, Pocket ID), git forges and CI (Gitea, Forgejo, Jenkins), Matrix
+  chat (Continuwuity, Element), [MCP servers](#mcp-servers) for many of those,
+  and more. Seeded on every boot (idempotent), immutable, available to every
+  account. Each carries its real app logo, most of them from
+  [Dashboard Icons](#icons) and a few bundled with Homerun; an app with no
+  official logo falls back to a colored icon for its category.
 - **Custom**, save any service's current config as a template from its Settings
   tab, or build one from scratch under `Templates → New Template`, whose
   **Runtime** section takes the same fields as a service's **Container →
@@ -163,6 +167,9 @@ Env vars on the primary template can then reference a companion:
   address, like Vikunja's `VIKUNJA_SERVICE_PUBLICURL` or Joplin Server's
   `APP_BASE_URL`. The wizard shows the token as is and fills it in when you
   create the service.
+- `{{host}}` becomes that URL's hostname alone (`<slug>.<base domain>`), for
+  apps that want a bare domain, like a Matrix server name (Continuwuity) or a
+  short-link domain (Shlink).
 
 An alias that doesn't resolve is left in the deployed env var verbatim rather
 than silently blanked, so a typo is visible instead of mysterious.

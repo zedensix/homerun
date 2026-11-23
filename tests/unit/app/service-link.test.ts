@@ -90,6 +90,13 @@ describe("detectLinkEngine", () => {
 	test("falls back to a generic HTTP service", () => {
 		expect(detectLinkEngine("ghcr.io/acme/api").id).toBe("generic");
 	});
+
+	test("a datastore's web client is an HTTP service, not the datastore", () => {
+		expect(detectLinkEngine("mongo-express").id).toBe("generic");
+		expect(detectLinkEngine("mongo-express:latest").id).toBe("generic");
+		expect(detectLinkEngine("redis/redisinsight").id).toBe("generic");
+		expect(dataPathFor("redis/redisinsight", "latest")).toBeNull();
+	});
 });
 
 describe("buildLinkEnv", () => {

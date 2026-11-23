@@ -110,22 +110,24 @@ copy is running, the routing traffic phase asks every hostname the service is
 published at for its page, through Traefik on this server, and through its
 public URL too when [DNS automation](dns-automation.md) or Pangolin points that
 hostname here. Traefik gets a moment to pick up the new route: each address is
-retried for up to 30 seconds before it's judged. The deploy fails when the
-answer is Traefik's own rather than the app's: no route for the hostname
-(Traefik's 404, or the not-found [error page](error-pages.md)), or Traefik
-unable to reach the container (502 or 504), or, publicly, an edge that answers
-with its own default certificate for another name, or Cloudflare unable to reach
-this server. Such a deploy keeps the new copy running, so you can read its logs,
-and its Overview still shows it running; only the deployment is marked failed.
-Whatever the app itself answers, a 401, a 404 or a 500, counts as an answer: a
-502 or 504 is checked against the container directly, and one the app returns
-itself passes. A bare `404 page not found`, Traefik's exact text and also the
-stock 404 of any app written in Go, is checked against the container the same
-way when error pages aren't published: it passes when the container answers 404
-itself. A certificate still being issued, a public URL that doesn't resolve yet
-(DNS still propagating), a service that doesn't speak HTTP, or a Traefik this
-server can't reach only add a warning to the deploy log. Database images and
-UDP-only ports aren't checked.
+retried for up to 30 seconds before it's judged, and an image with its own
+healthcheck is first given until that check has run once (up to 5 minutes),
+since Traefik doesn't route to a container whose health is still starting. The
+deploy fails when the answer is Traefik's own rather than the app's: no route
+for the hostname (Traefik's 404, or the not-found [error page](error-pages.md)),
+or Traefik unable to reach the container (502 or 504), or, publicly, an edge
+that answers with its own default certificate for another name, or Cloudflare
+unable to reach this server. Such a deploy keeps the new copy running, so you
+can read its logs, and its Overview still shows it running; only the deployment
+is marked failed. Whatever the app itself answers, a 401, a 404 or a 500, counts
+as an answer: a 502 or 504 is checked against the container directly, and one
+the app returns itself passes. A bare `404 page not found`, Traefik's exact text
+and also the stock 404 of any app written in Go, is checked against the
+container the same way when error pages aren't published: it passes when the
+container answers 404 itself. A certificate still being issued, a public URL
+that doesn't resolve yet (DNS still propagating), a service that doesn't speak
+HTTP, or a Traefik this server can't reach only add a warning to the deploy log.
+Database images and UDP-only ports aren't checked.
 
 **Requests racing a removed copy are retried.** Every published service's router
 carries a retry middleware: a request that reaches a container or swarm task

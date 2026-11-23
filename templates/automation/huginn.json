@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Huginn",
+	"description": "Agents that watch the web and act for you, an IFTTT you host: scrape pages, follow feeds, send digests and webhooks. Runs its own MySQL inside; signs in as admin / password the first time, change it.",
+	"image": "ghcr.io/huginn/huginn",
+	"tag": "latest",
+	"containerPort": 3000,
+	"icon": "di:huginn",
+	"tags": ["automation", "agents", "scraping", "ifttt"],
+	"websiteUrl": null,
+	"sourceUrl": "https://github.com/huginn/huginn",
+	"envVars": {},
+	"volumes": ["/var/lib/mysql"]
+}

@@ -1,0 +1,15 @@
+{
+	"$schema": "../schema.json",
+	"name": "Glances",
+	"description": "System monitor in the browser: CPU, memory, load, network, disks and processes at a glance, with a REST API for Homepage or Home Assistant. Has no sign-in; keep it off a public domain or behind the login wall.",
+	"image": "nicolargo/glances",
+	"tag": "latest",
+	"containerPort": 61208,
+	"icon": "di:glances",
+	"tags": ["system-monitor", "metrics", "processes", "api"],
+	"websiteUrl": "https://nicolargo.github.io/glances",
+	"sourceUrl": "https://github.com/nicolargo/glances",
+	"envVars": {
+		"GLANCES_OPT": "-w"
+	}
+}

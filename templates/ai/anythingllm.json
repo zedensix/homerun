@@ -1,0 +1,17 @@
+{
+	"$schema": "../schema.json",
+	"name": "AnythingLLM",
+	"description": "All-in-one AI workspace: chat with your documents through any LLM (Ollama, OpenAI, Anthropic), with agents and a built-in vector store. Set a password under its security settings, it starts open.",
+	"image": "mintplexlabs/anythingllm",
+	"tag": "latest",
+	"containerPort": 3001,
+	"icon": "di:anything-llm",
+	"tags": ["llm", "rag", "chat", "documents", "agents"],
+	"websiteUrl": "https://anythingllm.com",
+	"sourceUrl": "https://github.com/Mintplex-Labs/anything-llm",
+	"envVars": {
+		"JWT_SECRET": "{{secret}}",
+		"STORAGE_DIR": "/app/server/storage"
+	},
+	"volumes": ["/app/server/storage"]
+}

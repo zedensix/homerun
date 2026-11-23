@@ -1,0 +1,25 @@
+{
+	"$schema": "../schema.json",
+	"name": "LiteLLM",
+	"description": "One OpenAI-compatible API in front of more than 100 model providers, with virtual keys, budgets, rate limits and spend tracking. Comes with a linked Postgres; the admin UI at /ui signs in as UI_USERNAME / UI_PASSWORD.",
+	"image": "ghcr.io/berriai/litellm",
+	"tag": "main-stable",
+	"containerPort": 4000,
+	"icon": "",
+	"tags": ["llm", "proxy", "openai", "gateway", "api"],
+	"websiteUrl": "https://www.litellm.ai",
+	"sourceUrl": "https://github.com/BerriAI/litellm",
+	"envVars": {
+		"DATABASE_URL": "postgresql://{{db.POSTGRES_USER}}:{{db.POSTGRES_PASSWORD}}@{{db}}:5432/{{db.POSTGRES_DB}}",
+		"LITELLM_MASTER_KEY": "sk-{{secret}}",
+		"STORE_MODEL_IN_DB": "True",
+		"UI_PASSWORD": "{{secret:hex16}}",
+		"UI_USERNAME": "admin"
+	},
+	"links": [
+		{
+			"alias": "db",
+			"template": "postgres"
+		}
+	]
+}

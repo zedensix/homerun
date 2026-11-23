@@ -1,0 +1,16 @@
+{
+	"$schema": "../schema.json",
+	"name": "Verdaccio",
+	"description": "Private npm registry that proxies and caches npmjs.org: publish your own packages, install everything else through it. Anyone can create an account with npm adduser until you set max_users in its config.",
+	"image": "verdaccio/verdaccio",
+	"tag": "latest",
+	"containerPort": 4873,
+	"icon": "di:verdaccio",
+	"tags": ["npm", "registry", "packages", "javascript"],
+	"websiteUrl": "https://verdaccio.org",
+	"sourceUrl": "https://github.com/verdaccio/verdaccio",
+	"envVars": {
+		"VERDACCIO_PUBLIC_URL": "{{url}}"
+	},
+	"volumes": ["/verdaccio/storage"]
+}

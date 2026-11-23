@@ -1,0 +1,17 @@
+{
+	"$schema": "../schema.json",
+	"name": "CouchDB",
+	"description": "Document database that syncs: multi-master replication over HTTP, the backend Obsidian LiveSync and PouchDB apps use. Its Fauxton admin is at /_utils, signing in as COUCHDB_USER / COUCHDB_PASSWORD.",
+	"image": "couchdb",
+	"tag": "3",
+	"containerPort": 5984,
+	"icon": "di:couchdb",
+	"tags": ["nosql", "database", "sync", "replication"],
+	"websiteUrl": "https://couchdb.apache.org",
+	"sourceUrl": "https://github.com/apache/couchdb",
+	"envVars": {
+		"COUCHDB_PASSWORD": "{{secret}}",
+		"COUCHDB_USER": "admin"
+	},
+	"volumes": ["/opt/couchdb/data"]
+}

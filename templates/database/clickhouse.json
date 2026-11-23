@@ -1,0 +1,16 @@
+{
+	"$schema": "../schema.json",
+	"name": "ClickHouse",
+	"description": "Column-oriented database for analytics, fast over billions of rows, with an SQL playground at /play. Signs in as default with the password in CLICKHOUSE_PASSWORD.",
+	"image": "clickhouse/clickhouse-server",
+	"tag": "latest",
+	"containerPort": 8123,
+	"icon": "di:clickhouse",
+	"tags": ["sql", "analytics", "olap", "columnar"],
+	"websiteUrl": "https://clickhouse.com",
+	"sourceUrl": "https://github.com/ClickHouse/ClickHouse",
+	"envVars": {
+		"CLICKHOUSE_PASSWORD": "{{secret}}"
+	},
+	"volumes": ["/var/lib/clickhouse"]
+}

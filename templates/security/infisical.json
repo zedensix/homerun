@@ -1,0 +1,30 @@
+{
+	"$schema": "../schema.json",
+	"name": "Infisical",
+	"description": "Secrets manager for teams: environment variables, certificates and dynamic secrets with versions, audit logs and a CLI. Comes with a linked Postgres and Redis; the first account you create is the admin.",
+	"image": "infisical/infisical",
+	"tag": "latest",
+	"containerPort": 8080,
+	"icon": "di:infisical",
+	"tags": ["secrets", "env", "vault", "devops"],
+	"websiteUrl": "https://infisical.com",
+	"sourceUrl": "https://github.com/Infisical/infisical",
+	"envVars": {
+		"AUTH_SECRET": "{{secret}}",
+		"DB_CONNECTION_URI": "postgres://{{db.POSTGRES_USER}}:{{db.POSTGRES_PASSWORD}}@{{db}}:5432/{{db.POSTGRES_DB}}",
+		"ENCRYPTION_KEY": "{{secret:hex32}}",
+		"NODE_ENV": "production",
+		"REDIS_URL": "redis://:{{redis.REDIS_PASSWORD}}@{{redis}}:6379",
+		"SITE_URL": "{{url}}"
+	},
+	"links": [
+		{
+			"alias": "db",
+			"template": "postgres"
+		},
+		{
+			"alias": "redis",
+			"template": "redis"
+		}
+	]
+}

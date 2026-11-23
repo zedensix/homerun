@@ -1,0 +1,29 @@
+{
+	"$schema": "../schema.json",
+	"name": "Planka",
+	"description": "Kanban boards with real-time updates, a Trello alternative: projects, lists, cards, labels and attachments. Comes with a linked Postgres; signs in as DEFAULT_ADMIN_EMAIL / DEFAULT_ADMIN_PASSWORD.",
+	"image": "ghcr.io/plankanban/planka",
+	"tag": "latest",
+	"containerPort": 1337,
+	"icon": "di:planka",
+	"tags": ["kanban", "tasks", "project-management", "trello"],
+	"websiteUrl": "https://planka.app",
+	"sourceUrl": "https://github.com/plankanban/planka",
+	"envVars": {
+		"BASE_URL": "{{url}}",
+		"DATABASE_URL": "postgresql://{{db.POSTGRES_USER}}:{{db.POSTGRES_PASSWORD}}@{{db}}:5432/{{db.POSTGRES_DB}}",
+		"DEFAULT_ADMIN_EMAIL": "admin@example.com",
+		"DEFAULT_ADMIN_NAME": "Admin",
+		"DEFAULT_ADMIN_PASSWORD": "{{secret:hex16}}",
+		"DEFAULT_ADMIN_USERNAME": "admin",
+		"SECRET_KEY": "{{secret}}",
+		"TRUST_PROXY": "true"
+	},
+	"volumes": ["/app/data"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "postgres"
+		}
+	]
+}

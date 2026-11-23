@@ -235,9 +235,14 @@ phase, after the workload is up: every routed hostname is probed over HTTPS
 through the local Traefik (found by image, reached at its address on the shared
 network or else its published loopback port, with the hostname as SNI and Host
 header), and through its public URL for the hosts `syncAutoDns` reports a
-provider (a DNS connection or Pangolin) now points here. Each probe retries for
-30s (`DefaultRouteTiming`). Traefik's own answers are told apart from the app's
-by `TraefikError`: Homerun's error pages carry `X-Homerun-Error-Page`
+provider (a DNS connection or Pangolin) now points here. A container whose image
+has a healthcheck is first waited on until that check has reported once
+(`AwaitFirstHealthcheck`, up to `rolloutMaxWait`): Traefik leaves a container
+out of its routers while Docker says `starting`, so ESPHome's 30s-interval check
+failed every first deploy before this (a blue-green deploy already waited in
+`awaitReadyOrDiscard`, a first deploy didn't). Each probe retries for 30s
+(`DefaultRouteTiming`). Traefik's own answers are told apart from the app's by
+`TraefikError`: Homerun's error pages carry `X-Homerun-Error-Page`
 (`ERROR_PAGE_HEADER`), so the catch-all's 404 is unambiguous, and Traefik's
 plain `404 page not found` only counts without published error pages (with them,
 a missing router lands on the catch-all, so a plain 404 is the app's). A
@@ -973,7 +978,10 @@ a literal token.
 `{{url}}` (`src/lib/template-url.ts`) is the service's public URL,
 `https://<defaultHostname>`, filled by `createServiceFromTemplate` (Quick
 Deploy) and by the wizard's create action (which prefers the custom domain it
-was given); the wizard's form shows the raw token. A built-in template's
+was given); the wizard's form shows the raw token. `{{host}}` is the same URL's
+bare hostname, for apps that take a domain rather than a URL (Continuwuity's
+server name, Shlink's default domain); it survives link resolution because
+`resolveLinkTokens` leaves an alias it doesn't know as is. A built-in template's
 `volumes` (container paths, `template.volumes`) get one named volume each
 through `default-volume.ts`'s `attachTemplateVolumes`, named like the wizard's
 new volumes (`<slug>-data`, `<slug>-data-1`), before `attachDefaultDataVolume`

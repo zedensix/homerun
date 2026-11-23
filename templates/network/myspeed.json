@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "MySpeed",
+	"description": "Runs internet speed tests on a schedule and charts download, upload and ping over time, with alerts when it drops. Set a password in its settings, it starts open.",
+	"image": "germannewsmaker/myspeed",
+	"tag": "latest",
+	"containerPort": 5216,
+	"icon": "di:myspeed",
+	"tags": ["speedtest", "internet", "bandwidth", "monitoring"],
+	"websiteUrl": "https://myspeed.dev",
+	"sourceUrl": "https://github.com/gnmyt/myspeed",
+	"envVars": {},
+	"volumes": ["/myspeed/data"]
+}

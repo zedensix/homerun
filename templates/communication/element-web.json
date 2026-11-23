@@ -1,0 +1,13 @@
+{
+	"$schema": "../schema.json",
+	"name": "Element",
+	"description": "Element, the Matrix chat client, served from your own domain. Points at matrix.org by default; sign in with any homeserver, like a Continuwuity deployed here.",
+	"image": "vectorim/element-web",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:element",
+	"tags": ["matrix", "chat", "client", "messaging"],
+	"websiteUrl": "https://element.io",
+	"sourceUrl": "https://github.com/element-hq/element-web",
+	"envVars": {}
+}

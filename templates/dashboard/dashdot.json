@@ -1,0 +1,13 @@
+{
+	"$schema": "../schema.json",
+	"name": "dash.",
+	"description": "Modern server dashboard: CPU, memory, storage and network at a glance, with widgets to embed in other dashboards. Read-only, with no sign-in.",
+	"image": "mauricenino/dashdot",
+	"tag": "latest",
+	"containerPort": 3001,
+	"icon": "di:dashdot",
+	"tags": ["server", "system-monitor", "widgets", "homepage"],
+	"websiteUrl": "https://getdashdot.com",
+	"sourceUrl": "https://github.com/MauriceNino/dashdot",
+	"envVars": {}
+}

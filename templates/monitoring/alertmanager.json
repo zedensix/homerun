@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Alertmanager",
+	"description": "Groups, silences and routes Prometheus alerts to email, Slack, ntfy or a webhook. Starts with a placeholder receiver: point Prometheus at it, then give it your own alertmanager.yml.",
+	"image": "prom/alertmanager",
+	"tag": "latest",
+	"containerPort": 9093,
+	"icon": "di:alertmanager",
+	"tags": ["alerts", "prometheus", "notifications", "monitoring"],
+	"websiteUrl": "https://prometheus.io/docs/alerting/latest/alertmanager",
+	"sourceUrl": "https://github.com/prometheus/alertmanager",
+	"envVars": {},
+	"volumes": ["/alertmanager"]
+}

@@ -1,0 +1,21 @@
+{
+	"$schema": "../schema.json",
+	"name": "ONLYOFFICE Docs",
+	"description": "Online editors for Word, Excel and PowerPoint files, to plug into Nextcloud, Seafile or your own app. Integrations sign their requests with JWT_SECRET; it needs about 2 GB of memory.",
+	"image": "onlyoffice/documentserver",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:onlyoffice",
+	"tags": ["office", "documents", "spreadsheets", "collaboration"],
+	"websiteUrl": "https://www.onlyoffice.com",
+	"sourceUrl": "https://github.com/ONLYOFFICE/DocumentServer",
+	"envVars": {
+		"JWT_ENABLED": "true",
+		"JWT_SECRET": "{{secret}}"
+	},
+	"volumes": [
+		"/var/www/onlyoffice/Data",
+		"/var/lib/onlyoffice",
+		"/var/lib/postgresql"
+	]
+}

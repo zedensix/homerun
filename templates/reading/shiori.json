@@ -1,0 +1,16 @@
+{
+	"$schema": "../schema.json",
+	"name": "Shiori",
+	"description": "Simple bookmark manager that keeps a readable archive of each page, a Pocket alternative. Signs in as shiori / gopher the first time; once you create your own account that default one stops working.",
+	"image": "ghcr.io/go-shiori/shiori",
+	"tag": "latest",
+	"containerPort": 8080,
+	"icon": "di:shiori",
+	"tags": ["bookmarks", "read-later", "archive", "pocket"],
+	"websiteUrl": null,
+	"sourceUrl": "https://github.com/go-shiori/shiori",
+	"envVars": {
+		"SHIORI_DIR": "/shiori"
+	},
+	"volumes": ["/shiori"]
+}

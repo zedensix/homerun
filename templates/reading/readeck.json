@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Readeck",
+	"description": "Read-it-later: saves articles, videos and pictures as clean readable pages, with highlights, labels and e-book export. The first visit creates the admin account.",
+	"image": "codeberg.org/readeck/readeck",
+	"tag": "latest",
+	"containerPort": 8000,
+	"icon": "di:readeck",
+	"tags": ["read-later", "bookmarks", "articles", "pocket"],
+	"websiteUrl": "https://readeck.org",
+	"sourceUrl": "https://codeberg.org/readeck/readeck",
+	"envVars": {},
+	"volumes": ["/readeck"]
+}

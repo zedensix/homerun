@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Organizr",
+	"description": "Tabbed homepage that wraps your apps behind one sign-in, with Plex, Sonarr and Radarr widgets. Its setup wizard on the first visit creates the admin.",
+	"image": "organizr/organizr",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:organizr",
+	"tags": ["homepage", "tabs", "sso", "arr"],
+	"websiteUrl": "https://organizr.app",
+	"sourceUrl": "https://github.com/causefx/Organizr",
+	"envVars": {},
+	"volumes": ["/config"]
+}

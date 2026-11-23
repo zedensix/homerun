@@ -1,0 +1,37 @@
+{
+	"$schema": "../schema.json",
+	"name": "Plausible",
+	"description": "Lightweight, cookie-free web analytics on one simple dashboard. Comes with a linked Postgres and ClickHouse; the first account you register owns the instance, later ones need an invite.",
+	"image": "ghcr.io/plausible/community-edition",
+	"tag": "v3",
+	"containerPort": 8000,
+	"icon": "di:plausible",
+	"tags": ["analytics", "web-analytics", "privacy", "cookie-free"],
+	"websiteUrl": "https://plausible.io",
+	"sourceUrl": "https://github.com/plausible/community-edition",
+	"envVars": {
+		"BASE_URL": "{{url}}",
+		"CLICKHOUSE_DATABASE_URL": "http://default:{{events.CLICKHOUSE_PASSWORD}}@{{events}}:8123/plausible_events_db",
+		"DATABASE_URL": "postgres://{{db.POSTGRES_USER}}:{{db.POSTGRES_PASSWORD}}@{{db}}:5432/{{db.POSTGRES_DB}}",
+		"DISABLE_REGISTRATION": "invite_only",
+		"HTTP_PORT": "8000",
+		"SECRET_KEY_BASE": "{{secret:hex64}}",
+		"TMPDIR": "/var/lib/plausible/tmp"
+	},
+	"volumes": ["/var/lib/plausible"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "postgres"
+		},
+		{
+			"alias": "events",
+			"template": "clickhouse"
+		}
+	],
+	"command": [
+		"sh",
+		"-c",
+		"/entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
+	]
+}

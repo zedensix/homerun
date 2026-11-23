@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Kanboard",
+	"description": "Minimalist kanban board with swimlanes, subtasks, time tracking and plugins, on SQLite. Signs in as admin / admin the first time, change it.",
+	"image": "kanboard/kanboard",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:kanboard",
+	"tags": ["kanban", "tasks", "project-management"],
+	"websiteUrl": "https://kanboard.org",
+	"sourceUrl": "https://github.com/kanboard/kanboard",
+	"envVars": {},
+	"volumes": ["/var/www/app/data", "/var/www/app/plugins"]
+}

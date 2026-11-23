@@ -1,0 +1,19 @@
+{
+	"$schema": "../schema.json",
+	"name": "Meilisearch",
+	"description": "Instant, typo-tolerant search engine with a simple REST API, for site and app search. Every request needs the key in MEILI_MASTER_KEY.",
+	"image": "getmeili/meilisearch",
+	"tag": "latest",
+	"containerPort": 7700,
+	"icon": "di:meilisearch",
+	"tags": ["search", "full-text", "api", "engine"],
+	"websiteUrl": "https://www.meilisearch.com",
+	"sourceUrl": "https://github.com/meilisearch/meilisearch",
+	"envVars": {
+		"MEILI_ENV": "production",
+		"MEILI_EXPERIMENTAL_DUMPLESS_UPGRADE": "true",
+		"MEILI_MASTER_KEY": "{{secret}}",
+		"MEILI_NO_ANALYTICS": "true"
+	},
+	"volumes": ["/meili_data"]
+}

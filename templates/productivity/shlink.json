@@ -1,0 +1,18 @@
+{
+	"$schema": "../schema.json",
+	"name": "Shlink",
+	"description": "URL shortener with QR codes, visit stats and a REST API, on SQLite. Manage it from the Shlink web client with the API key in INITIAL_API_KEY.",
+	"image": "shlinkio/shlink",
+	"tag": "stable",
+	"containerPort": 8080,
+	"icon": "di:shlink",
+	"tags": ["url-shortener", "links", "qr-code", "analytics"],
+	"websiteUrl": "https://shlink.io",
+	"sourceUrl": "https://github.com/shlinkio/shlink",
+	"envVars": {
+		"DEFAULT_DOMAIN": "{{host}}",
+		"INITIAL_API_KEY": "{{secret}}",
+		"IS_HTTPS_ENABLED": "true"
+	},
+	"volumes": ["/etc/shlink/data"]
+}

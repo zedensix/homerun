@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "VictoriaMetrics",
+	"description": "Fast, compact time-series database that speaks Prometheus (scrape, remote write and PromQL) on far less disk and memory. Keeps a month of data unless you pass -retentionPeriod.",
+	"image": "victoriametrics/victoria-metrics",
+	"tag": "latest",
+	"containerPort": 8428,
+	"icon": "di:victoriametrics",
+	"tags": ["metrics", "time-series", "prometheus", "promql"],
+	"websiteUrl": "https://victoriametrics.com",
+	"sourceUrl": "https://github.com/VictoriaMetrics/VictoriaMetrics",
+	"envVars": {},
+	"volumes": ["/victoria-metrics-data"]
+}

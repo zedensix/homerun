@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "CloudBeaver",
+	"description": "DBeaver in the browser: one SQL client for Postgres, MySQL, MariaDB, SQLite, ClickHouse and more. The first visit walks you through creating the admin.",
+	"image": "dbeaver/cloudbeaver",
+	"tag": "latest",
+	"containerPort": 8978,
+	"icon": "di:cloudbeaver",
+	"tags": ["sql", "database", "admin", "client"],
+	"websiteUrl": "https://dbeaver.com/cloudbeaver",
+	"sourceUrl": "https://github.com/dbeaver/cloudbeaver",
+	"envVars": {},
+	"volumes": ["/opt/cloudbeaver/workspace"]
+}

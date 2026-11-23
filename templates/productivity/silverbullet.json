@@ -1,0 +1,16 @@
+{
+	"$schema": "../schema.json",
+	"name": "SilverBullet",
+	"description": "Markdown notes you can program: wiki links, live queries over your pages and Lua scripting, all kept as plain files. Signs in with the user:password in SB_USER.",
+	"image": "ghcr.io/silverbulletmd/silverbullet",
+	"tag": "latest",
+	"containerPort": 3000,
+	"icon": "di:silverbullet",
+	"tags": ["notes", "markdown", "wiki", "pkm"],
+	"websiteUrl": "https://silverbullet.md",
+	"sourceUrl": "https://github.com/silverbulletmd/silverbullet",
+	"envVars": {
+		"SB_USER": "admin:{{secret}}"
+	},
+	"volumes": ["/space"]
+}

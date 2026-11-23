@@ -1,0 +1,18 @@
+{
+	"$schema": "../schema.json",
+	"name": "Jackett",
+	"description": "Indexer proxy: turns hundreds of torrent trackers into Torznab feeds for Sonarr, Radarr and Lidarr. Set an admin password on its dashboard, it starts open.",
+	"image": "lscr.io/linuxserver/jackett",
+	"tag": "latest",
+	"containerPort": 9117,
+	"icon": "di:jackett",
+	"tags": ["indexer", "torznab", "torrent", "arr"],
+	"websiteUrl": null,
+	"sourceUrl": "https://github.com/Jackett/Jackett",
+	"envVars": {
+		"PGID": "1000",
+		"PUID": "1000",
+		"TZ": "UTC"
+	},
+	"volumes": ["/config"]
+}

@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "PocketBase",
+	"description": "Backend in one file: a SQLite database with realtime subscriptions, auth, file storage and an admin dashboard at /_/. Create the first superuser with the link it prints in its logs.",
+	"image": "ghcr.io/muchobien/pocketbase",
+	"tag": "latest",
+	"containerPort": 8090,
+	"icon": "di:pocketbase",
+	"tags": ["backend", "database", "auth", "api"],
+	"websiteUrl": "https://pocketbase.io",
+	"sourceUrl": "https://github.com/pocketbase/pocketbase",
+	"envVars": {},
+	"volumes": ["/pb_data"]
+}

@@ -1,0 +1,18 @@
+{
+	"$schema": "../schema.json",
+	"name": "Grav",
+	"description": "Flat-file CMS: pages are Markdown files, no database, with an admin panel and themes. The first visit creates the admin account.",
+	"image": "lscr.io/linuxserver/grav",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:grav",
+	"tags": ["cms", "flat-file", "markdown", "website"],
+	"websiteUrl": "https://getgrav.org",
+	"sourceUrl": "https://github.com/getgrav/grav",
+	"envVars": {
+		"PGID": "1000",
+		"PUID": "1000",
+		"TZ": "UTC"
+	},
+	"volumes": ["/config"]
+}

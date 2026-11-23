@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Baïkal",
+	"description": "CalDAV and CardDAV server for calendars and contacts, synced to any phone or desktop client. Its setup wizard on the first visit sets the admin password, so run it right after deploying.",
+	"image": "ckulka/baikal",
+	"tag": "nginx",
+	"containerPort": 80,
+	"icon": "di:baikal",
+	"tags": ["calendar", "contacts", "caldav", "carddav"],
+	"websiteUrl": "https://sabre.io/baikal",
+	"sourceUrl": "https://github.com/sabre-io/Baikal",
+	"envVars": {},
+	"volumes": ["/var/www/baikal/config", "/var/www/baikal/Specific"]
+}

@@ -1,0 +1,26 @@
+{
+	"$schema": "../schema.json",
+	"name": "Kimai",
+	"description": "Time tracking for freelancers and teams: timesheets, projects, customers, invoices and reports. Comes with a linked MySQL; signs in as ADMINMAIL / ADMINPASS.",
+	"image": "kimai/kimai2",
+	"tag": "apache",
+	"containerPort": 8001,
+	"icon": "di:kimai",
+	"tags": ["time-tracking", "timesheets", "invoicing", "freelance"],
+	"websiteUrl": "https://www.kimai.org",
+	"sourceUrl": "https://github.com/kimai/kimai",
+	"envVars": {
+		"ADMINMAIL": "admin@example.com",
+		"ADMINPASS": "{{secret:hex16}}",
+		"APP_SECRET": "{{secret}}",
+		"DATABASE_URL": "mysql://root:{{db.MYSQL_ROOT_PASSWORD}}@{{db}}:3306/{{db.MYSQL_DATABASE}}?charset=utf8mb4&serverVersion=8.0.0",
+		"TRUSTED_PROXIES": "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+	},
+	"volumes": ["/opt/kimai/var/data", "/opt/kimai/var/plugins"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "mysql"
+		}
+	]
+}

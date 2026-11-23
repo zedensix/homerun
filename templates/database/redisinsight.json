@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Redis Insight",
+	"description": "Redis's own GUI: browse keys, run commands, profile and analyse memory, for Redis, Valkey and Dragonfly. Has no sign-in of its own; keep it off a public domain or behind the login wall.",
+	"image": "redis/redisinsight",
+	"tag": "latest",
+	"containerPort": 5540,
+	"icon": "di:redis",
+	"tags": ["redis", "valkey", "admin", "cache"],
+	"websiteUrl": "https://redis.io/insight",
+	"sourceUrl": "https://github.com/redis/RedisInsight",
+	"envVars": {},
+	"volumes": ["/data"]
+}

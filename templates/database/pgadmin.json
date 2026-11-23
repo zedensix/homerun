@@ -1,0 +1,17 @@
+{
+	"$schema": "../schema.json",
+	"name": "pgAdmin",
+	"description": "Web admin for PostgreSQL: browse schemas, run queries, read query plans, manage roles and backups. Signs in as PGADMIN_DEFAULT_EMAIL / PGADMIN_DEFAULT_PASSWORD; add each server by its service slug.",
+	"image": "dpage/pgadmin4",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:pgadmin",
+	"tags": ["postgres", "sql", "admin", "database"],
+	"websiteUrl": "https://www.pgadmin.org",
+	"sourceUrl": "https://github.com/pgadmin-org/pgadmin4",
+	"envVars": {
+		"PGADMIN_DEFAULT_EMAIL": "admin@example.com",
+		"PGADMIN_DEFAULT_PASSWORD": "{{secret:hex16}}"
+	},
+	"volumes": ["/var/lib/pgadmin"]
+}

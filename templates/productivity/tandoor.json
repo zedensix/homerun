@@ -1,0 +1,29 @@
+{
+	"$schema": "../schema.json",
+	"name": "Tandoor Recipes",
+	"description": "Recipe manager with meal plans, shopping lists, nutrition and imports from almost any recipe site. Comes with a linked Postgres; the first account you create is the admin.",
+	"image": "vabene1111/recipes",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:tandoor-recipes",
+	"tags": ["recipes", "cooking", "meal-planning", "food"],
+	"websiteUrl": "https://tandoor.dev",
+	"sourceUrl": "https://github.com/TandoorRecipes/recipes",
+	"envVars": {
+		"DB_ENGINE": "django.db.backends.postgresql",
+		"POSTGRES_DB": "{{db.POSTGRES_DB}}",
+		"POSTGRES_HOST": "{{db}}",
+		"POSTGRES_PASSWORD": "{{db.POSTGRES_PASSWORD}}",
+		"POSTGRES_PORT": "5432",
+		"POSTGRES_USER": "{{db.POSTGRES_USER}}",
+		"SECRET_KEY": "{{secret}}",
+		"TZ": "UTC"
+	},
+	"volumes": ["/opt/recipes/staticfiles", "/opt/recipes/mediafiles"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "postgres"
+		}
+	]
+}

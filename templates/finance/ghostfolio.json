@@ -1,0 +1,31 @@
+{
+	"$schema": "../schema.json",
+	"name": "Ghostfolio",
+	"description": "Wealth management for stocks, ETFs and crypto: your portfolio's performance, allocation and dividends across accounts. Comes with a linked Postgres and Redis; the first account you create is the admin.",
+	"image": "ghostfolio/ghostfolio",
+	"tag": "latest",
+	"containerPort": 3333,
+	"icon": "di:ghostfolio",
+	"tags": ["investments", "portfolio", "stocks", "crypto"],
+	"websiteUrl": "https://ghostfol.io",
+	"sourceUrl": "https://github.com/ghostfolio/ghostfolio",
+	"envVars": {
+		"ACCESS_TOKEN_SALT": "{{secret:hex32}}",
+		"DATABASE_URL": "postgresql://{{db.POSTGRES_USER}}:{{db.POSTGRES_PASSWORD}}@{{db}}:5432/{{db.POSTGRES_DB}}?connect_timeout=300&sslmode=disable",
+		"JWT_SECRET_KEY": "{{secret}}",
+		"NODE_ENV": "production",
+		"REDIS_HOST": "{{redis}}",
+		"REDIS_PASSWORD": "{{redis.REDIS_PASSWORD}}",
+		"REDIS_PORT": "6379"
+	},
+	"links": [
+		{
+			"alias": "db",
+			"template": "postgres"
+		},
+		{
+			"alias": "redis",
+			"template": "redis"
+		}
+	]
+}

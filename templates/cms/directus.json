@@ -1,0 +1,22 @@
+{
+	"$schema": "../schema.json",
+	"name": "Directus",
+	"description": "Headless CMS and data platform: turns a database into REST and GraphQL APIs with an admin app on top. Runs on SQLite as deployed here; signs in as ADMIN_EMAIL / ADMIN_PASSWORD.",
+	"image": "directus/directus",
+	"tag": "latest",
+	"containerPort": 8055,
+	"icon": "di:directus",
+	"tags": ["headless-cms", "api", "graphql", "no-code"],
+	"websiteUrl": "https://directus.io",
+	"sourceUrl": "https://github.com/directus/directus",
+	"envVars": {
+		"ADMIN_EMAIL": "admin@example.com",
+		"ADMIN_PASSWORD": "{{secret:hex16}}",
+		"DB_CLIENT": "sqlite3",
+		"DB_FILENAME": "/directus/database/data.db",
+		"PUBLIC_URL": "{{url}}",
+		"SECRET": "{{secret}}",
+		"WEBSOCKETS_ENABLED": "true"
+	},
+	"volumes": ["/directus/database", "/directus/uploads", "/directus/extensions"]
+}

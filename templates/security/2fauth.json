@@ -1,0 +1,18 @@
+{
+	"$schema": "../schema.json",
+	"name": "2FAuth",
+	"description": "Two-factor codes in the browser, an Authy alternative: store your TOTP and HOTP accounts and read codes from any device. The first account you register is the admin.",
+	"image": "2fauth/2fauth",
+	"tag": "latest",
+	"containerPort": 8000,
+	"icon": "di:2fauth",
+	"tags": ["2fa", "totp", "otp", "authenticator"],
+	"websiteUrl": "https://docs.2fauth.app",
+	"sourceUrl": "https://github.com/Bubka/2FAuth",
+	"envVars": {
+		"APP_KEY": "{{secret:hex32}}",
+		"APP_URL": "{{url}}",
+		"TRUSTED_PROXIES": "*"
+	},
+	"volumes": ["/2fauth"]
+}

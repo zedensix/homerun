@@ -1,0 +1,18 @@
+{
+	"$schema": "../schema.json",
+	"name": "ESPHome",
+	"description": "Builds and flashes firmware for ESP32 and ESP8266 devices from YAML, then updates them over the air. Signs in as USERNAME / PASSWORD; device discovery needs host networking, so add each device by its IP.",
+	"image": "ghcr.io/esphome/esphome",
+	"tag": "latest",
+	"containerPort": 6052,
+	"icon": "di:esphome",
+	"tags": ["iot", "esp32", "firmware", "home-automation"],
+	"websiteUrl": "https://esphome.io",
+	"sourceUrl": "https://github.com/esphome/esphome",
+	"envVars": {
+		"PASSWORD": "{{secret:hex16}}",
+		"TZ": "UTC",
+		"USERNAME": "admin"
+	},
+	"volumes": ["/config"]
+}

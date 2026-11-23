@@ -1,0 +1,21 @@
+{
+	"$schema": "../schema.json",
+	"name": "InfluxDB",
+	"description": "Time-series database for metrics, sensors and events, with its own UI, dashboards and Telegraf configs. Set up on first boot as DOCKER_INFLUXDB_INIT_USERNAME / DOCKER_INFLUXDB_INIT_PASSWORD, with an API token in DOCKER_INFLUXDB_INIT_ADMIN_TOKEN.",
+	"image": "influxdb",
+	"tag": "2",
+	"containerPort": 8086,
+	"icon": "di:influxdb",
+	"tags": ["time-series", "metrics", "iot", "database"],
+	"websiteUrl": "https://www.influxdata.com",
+	"sourceUrl": "https://github.com/influxdata/influxdb",
+	"envVars": {
+		"DOCKER_INFLUXDB_INIT_ADMIN_TOKEN": "{{secret}}",
+		"DOCKER_INFLUXDB_INIT_BUCKET": "default",
+		"DOCKER_INFLUXDB_INIT_MODE": "setup",
+		"DOCKER_INFLUXDB_INIT_ORG": "main",
+		"DOCKER_INFLUXDB_INIT_PASSWORD": "{{secret:hex16}}",
+		"DOCKER_INFLUXDB_INIT_USERNAME": "admin"
+	},
+	"volumes": ["/var/lib/influxdb2", "/etc/influxdb2"]
+}

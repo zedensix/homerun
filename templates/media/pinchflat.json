@@ -1,0 +1,18 @@
+{
+	"$schema": "../schema.json",
+	"name": "Pinchflat",
+	"description": "Downloads YouTube channels and playlists on a schedule with yt-dlp, ready for Jellyfin or Plex. Its image is amd64 only. Signs in as BASIC_AUTH_USERNAME / BASIC_AUTH_PASSWORD.",
+	"image": "ghcr.io/kieraneglin/pinchflat",
+	"tag": "latest",
+	"containerPort": 8945,
+	"icon": "di:pinchflat",
+	"tags": ["youtube", "yt-dlp", "downloader", "media"],
+	"websiteUrl": null,
+	"sourceUrl": "https://github.com/kieraneglin/pinchflat",
+	"envVars": {
+		"BASIC_AUTH_PASSWORD": "{{secret:hex16}}",
+		"BASIC_AUTH_USERNAME": "admin",
+		"TZ": "UTC"
+	},
+	"volumes": ["/config", "/downloads"]
+}

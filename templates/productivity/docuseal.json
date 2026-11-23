@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "DocuSeal",
+	"description": "Document signing, a DocuSign alternative: build fillable PDF forms, send them out and collect signatures with an audit trail. The first visit creates the admin account.",
+	"image": "docuseal/docuseal",
+	"tag": "latest",
+	"containerPort": 3000,
+	"icon": "di:docuseal",
+	"tags": ["signatures", "pdf", "documents", "forms"],
+	"websiteUrl": "https://www.docuseal.com",
+	"sourceUrl": "https://github.com/docusealco/docuseal",
+	"envVars": {},
+	"volumes": ["/data"]
+}

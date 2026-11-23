@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Loki",
+	"description": "Log aggregation from Grafana: stores logs indexed by labels only and queries them with LogQL from Grafana. Runs with its single-node defaults; push logs with Alloy or Promtail to /loki/api/v1/push.",
+	"image": "grafana/loki",
+	"tag": "latest",
+	"containerPort": 3100,
+	"icon": "di:loki",
+	"tags": ["logs", "logging", "grafana", "logql"],
+	"websiteUrl": "https://grafana.com/oss/loki",
+	"sourceUrl": "https://github.com/grafana/loki",
+	"envVars": {},
+	"volumes": ["/loki"]
+}

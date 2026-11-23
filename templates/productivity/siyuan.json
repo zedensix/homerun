@@ -1,0 +1,24 @@
+{
+	"$schema": "../schema.json",
+	"name": "SiYuan",
+	"description": "Block-based notes and personal knowledge base, local-first with end-to-end encrypted sync. Unlocks with the access code in SIYUAN_ACCESS_AUTH_CODE.",
+	"image": "b3log/siyuan",
+	"tag": "latest",
+	"containerPort": 6806,
+	"icon": "di:siyuan",
+	"tags": ["notes", "knowledge-base", "markdown", "pkm"],
+	"websiteUrl": "https://b3log.org/siyuan",
+	"sourceUrl": "https://github.com/siyuan-note/siyuan",
+	"envVars": {
+		"PGID": "1000",
+		"PUID": "1000",
+		"SIYUAN_ACCESS_AUTH_CODE": "{{secret}}",
+		"TZ": "UTC"
+	},
+	"volumes": ["/siyuan/workspace"],
+	"command": [
+		"serve",
+		"--workspace=/siyuan/workspace/",
+		"--accessAuthCode={{secret}}"
+	]
+}

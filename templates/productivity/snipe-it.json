@@ -1,0 +1,30 @@
+{
+	"$schema": "../schema.json",
+	"name": "Snipe-IT",
+	"description": "IT asset management: laptops, licences, accessories and who has them, with check-in and check-out history. Comes with a linked MySQL; the setup page on the first visit creates the admin.",
+	"image": "snipe/snipe-it",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:snipe-it",
+	"tags": ["assets", "inventory", "it", "licences"],
+	"websiteUrl": "https://snipeitapp.com",
+	"sourceUrl": "https://github.com/grokability/snipe-it",
+	"envVars": {
+		"APP_KEY": "{{secret:hex32}}",
+		"APP_TRUSTED_PROXIES": "*",
+		"APP_URL": "{{url}}",
+		"DB_CONNECTION": "mysql",
+		"DB_DATABASE": "{{db.MYSQL_DATABASE}}",
+		"DB_HOST": "{{db}}",
+		"DB_PASSWORD": "{{db.MYSQL_ROOT_PASSWORD}}",
+		"DB_PORT": "3306",
+		"DB_USERNAME": "root"
+	},
+	"volumes": ["/var/lib/snipeit"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "mysql"
+		}
+	]
+}

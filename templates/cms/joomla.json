@@ -1,0 +1,26 @@
+{
+	"$schema": "../schema.json",
+	"name": "Joomla",
+	"description": "Content management system with users, menus, multilingual content and thousands of extensions. Comes with a linked MariaDB; the installer on the first visit creates the admin.",
+	"image": "joomla",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:joomla",
+	"tags": ["cms", "website", "php", "multilingual"],
+	"websiteUrl": "https://www.joomla.org",
+	"sourceUrl": "https://github.com/joomla/joomla-cms",
+	"envVars": {
+		"JOOMLA_DB_HOST": "{{db}}",
+		"JOOMLA_DB_NAME": "{{db.MARIADB_DATABASE}}",
+		"JOOMLA_DB_PASSWORD": "{{db.MARIADB_ROOT_PASSWORD}}",
+		"JOOMLA_DB_TYPE": "mysqli",
+		"JOOMLA_DB_USER": "root"
+	},
+	"volumes": ["/var/www/html"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "mariadb"
+		}
+	]
+}

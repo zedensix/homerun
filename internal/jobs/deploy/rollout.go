@@ -1,6 +1,7 @@
 package deploy
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -53,6 +54,26 @@ func SampleFromInspect(info *dockerapi.ContainerInspect) Sample {
 	}
 	exitCode := info.State.ExitCode
 	return Sample{ExitCode: &exitCode, Health: health, HealthOutput: output, OOMKilled: info.State.OOMKilled, RestartCount: info.RestartCount, State: status}
+}
+
+// AwaitFirstHealthcheck polls sample every poll until the container's own
+// healthcheck has reported once, it stops running, or maxWait passes. Traefik
+// leaves a container out of its routers while Docker still says "starting",
+// so the route check waits here first instead of spending its window on a
+// router that can't exist yet.
+func AwaitFirstHealthcheck(ctx context.Context, sample func(context.Context) (Sample, error), poll, maxWait time.Duration) {
+	deadline := time.Now().Add(maxWait)
+	for {
+		current, err := sample(ctx)
+		if err != nil || current.Health != "starting" || current.State != "running" || !time.Now().Add(poll).Before(deadline) {
+			return
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(poll):
+		}
+	}
 }
 
 // Verdict is a rollout judgement: State is "pending", "ready", "completed" or

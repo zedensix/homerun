@@ -1,0 +1,16 @@
+{
+	"$schema": "../schema.json",
+	"name": "Baserow",
+	"description": "No-code database, an Airtable alternative: tables, views, forms and automations, bundled with its own Postgres and Redis in one container. The first account you create is the admin; the first boot takes a couple of minutes.",
+	"image": "baserow/baserow",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:baserow",
+	"tags": ["no-code", "database", "spreadsheet", "airtable"],
+	"websiteUrl": "https://baserow.io",
+	"sourceUrl": "https://github.com/baserow/baserow",
+	"envVars": {
+		"BASEROW_PUBLIC_URL": "{{url}}"
+	},
+	"volumes": ["/baserow/data"]
+}

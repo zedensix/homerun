@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Netdata",
+	"description": "Real-time metrics at one-second resolution, with hundreds of preconfigured charts and alerts. Deployed as is it sees the host's CPU, memory and network; disks and other containers need host mounts. Its dashboard has no sign-in of its own.",
+	"image": "netdata/netdata",
+	"tag": "stable",
+	"containerPort": 19999,
+	"icon": "di:netdata",
+	"tags": ["metrics", "monitoring", "alerts", "real-time"],
+	"websiteUrl": "https://www.netdata.cloud",
+	"sourceUrl": "https://github.com/netdata/netdata",
+	"envVars": {},
+	"volumes": ["/etc/netdata", "/var/lib/netdata", "/var/cache/netdata"]
+}

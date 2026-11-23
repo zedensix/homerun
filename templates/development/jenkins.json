@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Jenkins",
+	"description": "Automation server for CI/CD pipelines, with thousands of plugins. Unlock it with the initial admin password it prints in its logs on the first boot.",
+	"image": "jenkins/jenkins",
+	"tag": "lts",
+	"containerPort": 8080,
+	"icon": "di:jenkins",
+	"tags": ["ci", "cd", "pipelines", "automation"],
+	"websiteUrl": "https://www.jenkins.io",
+	"sourceUrl": "https://github.com/jenkinsci/jenkins",
+	"envVars": {},
+	"volumes": ["/var/jenkins_home"]
+}

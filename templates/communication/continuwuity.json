@@ -1,0 +1,23 @@
+{
+	"$schema": "../schema.json",
+	"name": "Continuwuity",
+	"description": "Matrix homeserver in Rust, light enough for a small VPS: federated, end-to-end encrypted chat for Element and every other Matrix client. Its server name is this service's hostname and can't change after the first boot; registering needs the token in CONTINUWUITY_REGISTRATION_TOKEN, and the first account is the admin.",
+	"image": "forgejo.ellis.link/continuwuation/continuwuity",
+	"tag": "latest",
+	"containerPort": 6167,
+	"icon": "di:matrix",
+	"tags": ["matrix", "chat", "homeserver", "federation"],
+	"websiteUrl": "https://continuwuity.org",
+	"sourceUrl": "https://forgejo.ellis.link/continuwuation/continuwuity",
+	"envVars": {
+		"CONTINUWUITY_ADDRESS": "0.0.0.0",
+		"CONTINUWUITY_ALLOW_REGISTRATION": "true",
+		"CONTINUWUITY_DATABASE_PATH": "/var/lib/continuwuity",
+		"CONTINUWUITY_PORT": "6167",
+		"CONTINUWUITY_REGISTRATION_TOKEN": "{{secret}}",
+		"CONTINUWUITY_SERVER_NAME": "{{host}}",
+		"CONTINUWUITY_WELL_KNOWN__CLIENT": "{{url}}",
+		"CONTINUWUITY_WELL_KNOWN__SERVER": "{{host}}:443"
+	},
+	"volumes": ["/var/lib/continuwuity"]
+}

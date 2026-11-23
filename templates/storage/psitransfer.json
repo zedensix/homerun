@@ -1,0 +1,17 @@
+{
+	"$schema": "../schema.json",
+	"name": "PsiTransfer",
+	"description": "WeTransfer-style file sharing: drop files, get a link, with expiry, passwords and resumable uploads. Uploading needs PSITRANSFER_UPLOAD_PASS, downloading only the link; the admin page lists uploads with PSITRANSFER_ADMIN_PASS.",
+	"image": "psitrax/psitransfer",
+	"tag": "latest",
+	"containerPort": 3000,
+	"icon": "di:psitransfer",
+	"tags": ["file-sharing", "upload", "transfer", "wetransfer"],
+	"websiteUrl": null,
+	"sourceUrl": "https://github.com/psi-4ward/psitransfer",
+	"envVars": {
+		"PSITRANSFER_ADMIN_PASS": "{{secret:hex16}}",
+		"PSITRANSFER_UPLOAD_PASS": "{{secret:hex16}}"
+	},
+	"volumes": ["/data"]
+}

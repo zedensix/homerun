@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Gokapi",
+	"description": "Lightweight file sharing with expiring links: each download link dies after a number of downloads or days, optionally end-to-end encrypted. Its setup page on the first start creates the admin.",
+	"image": "f0rc3/gokapi",
+	"tag": "latest",
+	"containerPort": 53842,
+	"icon": "",
+	"tags": ["file-sharing", "expiring-links", "upload", "encryption"],
+	"websiteUrl": null,
+	"sourceUrl": "https://github.com/Forceu/Gokapi",
+	"envVars": {},
+	"volumes": ["/app/data", "/app/config"]
+}

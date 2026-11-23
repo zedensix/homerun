@@ -1,0 +1,16 @@
+{
+	"$schema": "../schema.json",
+	"name": "Apprise API",
+	"description": "Notification gateway: one REST call fans out to more than 100 services (ntfy, Telegram, Discord, email, Pushover). Has no sign-in of its own; keep it off a public domain.",
+	"image": "caronc/apprise",
+	"tag": "latest",
+	"containerPort": 8000,
+	"icon": "di:apprise",
+	"tags": ["notifications", "api", "gateway", "alerts"],
+	"websiteUrl": null,
+	"sourceUrl": "https://github.com/caronc/apprise-api",
+	"envVars": {
+		"APPRISE_STATEFUL_MODE": "simple"
+	},
+	"volumes": ["/config"]
+}

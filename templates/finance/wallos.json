@@ -1,0 +1,16 @@
+{
+	"$schema": "../schema.json",
+	"name": "Wallos",
+	"description": "Subscription tracker: every recurring payment with its cost, renewal date and reminders, totalled in one currency. The first visit creates the admin account.",
+	"image": "bellamy/wallos",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:wallos",
+	"tags": ["subscriptions", "budget", "finance", "reminders"],
+	"websiteUrl": "https://wallosapp.com",
+	"sourceUrl": "https://github.com/ellite/Wallos",
+	"envVars": {
+		"TZ": "UTC"
+	},
+	"volumes": ["/var/www/html/db", "/var/www/html/images/uploads/logos"]
+}

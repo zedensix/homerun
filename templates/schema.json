@@ -63,7 +63,7 @@
 			"additionalProperties": {
 				"type": "string"
 			},
-			"description": "{{secret}} or {{secret:hex<N>}} for a generated secret, {{url}} for the service's public URL, {{alias}}/{{alias.VAR}} for a linked service.",
+			"description": "{{secret}} or {{secret:hex<N>}} for a generated secret, {{url}} for the service's public URL, {{host}} for its bare hostname, {{alias}}/{{alias.VAR}} for a linked service.",
 			"propertyNames": {
 				"type": "string"
 			},

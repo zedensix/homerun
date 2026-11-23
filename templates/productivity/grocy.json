@@ -1,0 +1,18 @@
+{
+	"$schema": "../schema.json",
+	"name": "Grocy",
+	"description": "Groceries and household management: stock and expiry dates, shopping lists, recipes, chores and batteries. Signs in as admin / admin the first time, change it.",
+	"image": "lscr.io/linuxserver/grocy",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:grocy",
+	"tags": ["groceries", "household", "inventory", "chores"],
+	"websiteUrl": "https://grocy.info",
+	"sourceUrl": "https://github.com/grocy/grocy",
+	"envVars": {
+		"PGID": "1000",
+		"PUID": "1000",
+		"TZ": "UTC"
+	},
+	"volumes": ["/config"]
+}

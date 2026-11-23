@@ -232,3 +232,36 @@ func TestGatewayVerdictPlainNotFound(t *testing.T) {
 		t.Fatalf("a 404 from Traefik while the container answers 200 = %+v, want broken", got)
 	}
 }
+
+func TestAwaitFirstHealthcheck(t *testing.T) {
+	cases := []struct {
+		name    string
+		samples []deploy.Sample
+		calls   int
+	}{
+		{"waits while the healthcheck hasn't reported", []deploy.Sample{{Health: "starting", State: "running"}, {Health: "starting", State: "running"}, {Health: "healthy", State: "running"}}, 3},
+		{"no healthcheck goes straight on", []deploy.Sample{{Health: "none", State: "running"}}, 1},
+		{"a container that stopped goes straight on", []deploy.Sample{{Health: "starting", State: "exited"}}, 1},
+		{"gives up at the deadline", []deploy.Sample{{Health: "starting", State: "running"}}, 0},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			calls := 0
+			maxWait := time.Second
+			if c.calls == 0 {
+				maxWait = 25 * time.Millisecond
+			}
+			deploy.AwaitFirstHealthcheck(context.Background(), func(context.Context) (deploy.Sample, error) {
+				sample := c.samples[min(calls, len(c.samples)-1)]
+				calls++
+				return sample, nil
+			}, 10*time.Millisecond, maxWait)
+			if c.calls > 0 && calls != c.calls {
+				t.Fatalf("sampled %d times, want %d", calls, c.calls)
+			}
+			if c.calls == 0 && calls > 4 {
+				t.Fatalf("sampled %d times past a 25ms deadline", calls)
+			}
+		})
+	}
+}

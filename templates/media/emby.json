@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Emby",
+	"description": "Media server for movies, shows, music and live TV, with apps for TVs, phones and browsers. Hardware transcoding and some of the apps need an Emby Premiere licence.",
+	"image": "emby/embyserver",
+	"tag": "latest",
+	"containerPort": 8096,
+	"icon": "di:emby",
+	"tags": ["media-server", "movies", "tv", "streaming", "music"],
+	"websiteUrl": "https://emby.media",
+	"sourceUrl": null,
+	"envVars": {},
+	"volumes": ["/config"]
+}

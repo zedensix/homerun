@@ -1,0 +1,16 @@
+{
+	"$schema": "../schema.json",
+	"name": "Qdrant",
+	"description": "Vector database for embeddings and semantic search, with a web dashboard at /dashboard. Every request needs the key in QDRANT__SERVICE__API_KEY.",
+	"image": "qdrant/qdrant",
+	"tag": "latest",
+	"containerPort": 6333,
+	"icon": "di:qdrant",
+	"tags": ["vector", "embeddings", "ai", "search"],
+	"websiteUrl": "https://qdrant.tech",
+	"sourceUrl": "https://github.com/qdrant/qdrant",
+	"envVars": {
+		"QDRANT__SERVICE__API_KEY": "{{secret}}"
+	},
+	"volumes": ["/qdrant/storage"]
+}

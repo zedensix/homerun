@@ -1,0 +1,24 @@
+{
+	"$schema": "../schema.json",
+	"name": "Mongo Express",
+	"description": "Web admin for MongoDB: browse databases and collections, edit documents and run queries. Comes with a linked MongoDB; signs in as ME_CONFIG_BASICAUTH_USERNAME / ME_CONFIG_BASICAUTH_PASSWORD.",
+	"image": "mongo-express",
+	"tag": "latest",
+	"containerPort": 8081,
+	"icon": "di:mongo-express",
+	"tags": ["mongodb", "nosql", "admin", "database"],
+	"websiteUrl": null,
+	"sourceUrl": "https://github.com/mongo-express/mongo-express",
+	"envVars": {
+		"ME_CONFIG_BASICAUTH": "true",
+		"ME_CONFIG_BASICAUTH_PASSWORD": "{{secret:hex16}}",
+		"ME_CONFIG_BASICAUTH_USERNAME": "admin",
+		"ME_CONFIG_MONGODB_URL": "mongodb://{{db.MONGO_INITDB_ROOT_USERNAME}}:{{db.MONGO_INITDB_ROOT_PASSWORD}}@{{db}}:27017/"
+	},
+	"links": [
+		{
+			"alias": "db",
+			"template": "mongodb"
+		}
+	]
+}

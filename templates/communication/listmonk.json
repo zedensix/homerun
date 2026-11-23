@@ -1,0 +1,36 @@
+{
+	"$schema": "../schema.json",
+	"name": "listmonk",
+	"description": "Newsletter and mailing list manager: subscribers, campaigns, templates and analytics, sending through your SMTP. Comes with a linked Postgres; signs in as LISTMONK_ADMIN_USER / LISTMONK_ADMIN_PASSWORD.",
+	"image": "listmonk/listmonk",
+	"tag": "latest",
+	"containerPort": 9000,
+	"icon": "di:listmonk",
+	"tags": ["newsletter", "email", "mailing-list", "campaigns"],
+	"websiteUrl": "https://listmonk.app",
+	"sourceUrl": "https://github.com/knadh/listmonk",
+	"envVars": {
+		"LISTMONK_ADMIN_PASSWORD": "{{secret:hex16}}",
+		"LISTMONK_ADMIN_USER": "admin",
+		"LISTMONK_app__address": "0.0.0.0:9000",
+		"LISTMONK_db__database": "{{db.POSTGRES_DB}}",
+		"LISTMONK_db__host": "{{db}}",
+		"LISTMONK_db__password": "{{db.POSTGRES_PASSWORD}}",
+		"LISTMONK_db__port": "5432",
+		"LISTMONK_db__ssl_mode": "disable",
+		"LISTMONK_db__user": "{{db.POSTGRES_USER}}",
+		"TZ": "UTC"
+	},
+	"volumes": ["/listmonk/uploads"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "postgres"
+		}
+	],
+	"command": [
+		"sh",
+		"-c",
+		"./listmonk --install --idempotent --yes --config '' && ./listmonk --upgrade --yes --config '' && ./listmonk --config ''"
+	]
+}

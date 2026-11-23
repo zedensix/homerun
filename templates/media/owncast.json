@@ -1,0 +1,21 @@
+{
+	"$schema": "../schema.json",
+	"name": "Owncast",
+	"description": "Live streaming server with chat, a Twitch you host. Stream to RTMP on port 1935; the admin at /admin starts as admin / abc123, so change that and the stream key first.",
+	"image": "owncast/owncast",
+	"tag": "latest",
+	"containerPort": 8080,
+	"icon": "di:owncast",
+	"tags": ["streaming", "live", "video", "chat", "rtmp"],
+	"websiteUrl": "https://owncast.online",
+	"sourceUrl": "https://github.com/owncast/owncast",
+	"envVars": {},
+	"volumes": ["/app/data"],
+	"publishedPorts": [
+		{
+			"containerPort": 1935,
+			"hostPort": 1935,
+			"protocol": "tcp"
+		}
+	]
+}

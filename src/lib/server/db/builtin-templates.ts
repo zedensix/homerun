@@ -60,7 +60,7 @@ export const builtinTemplateFileSchema = z
 		envVars: z
 			.record(z.string(), tokenized)
 			.describe(
-				"{{secret}} or {{secret:hex<N>}} for a generated secret, {{url}} for the service's public URL, {{alias}}/{{alias.VAR}} for a linked service.",
+				"{{secret}} or {{secret:hex<N>}} for a generated secret, {{url}} for the service's public URL, {{host}} for its bare hostname, {{alias}}/{{alias.VAR}} for a linked service.",
 			),
 		healthcheckCommand: z.string().optional(),
 		icon: z

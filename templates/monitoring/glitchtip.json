@@ -1,0 +1,26 @@
+{
+	"$schema": "../schema.json",
+	"name": "GlitchTip",
+	"description": "Error tracking that accepts Sentry's SDKs, plus uptime checks, in one container instead of Sentry's dozens. Comes with a linked Postgres; point any Sentry SDK at the DSN it gives each project.",
+	"image": "glitchtip/glitchtip",
+	"tag": "latest",
+	"containerPort": 8000,
+	"icon": "di:glitchtip",
+	"tags": ["errors", "sentry", "exceptions", "uptime"],
+	"websiteUrl": "https://glitchtip.com",
+	"sourceUrl": "https://gitlab.com/glitchtip/glitchtip-backend",
+	"envVars": {
+		"DATABASE_URL": "postgresql://{{db.POSTGRES_USER}}:{{db.POSTGRES_PASSWORD}}@{{db}}:5432/{{db.POSTGRES_DB}}",
+		"DEFAULT_FROM_EMAIL": "glitchtip@example.com",
+		"GLITCHTIP_DOMAIN": "{{url}}",
+		"SECRET_KEY": "{{secret}}",
+		"VALKEY_URL": ""
+	},
+	"volumes": ["/code/uploads"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "postgres"
+		}
+	]
+}

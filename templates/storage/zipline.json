@@ -1,0 +1,23 @@
+{
+	"$schema": "../schema.json",
+	"name": "Zipline",
+	"description": "File, image and link sharing server for ShareX, Flameshot and the like: upload, get a short URL, manage it all from a dashboard. Comes with a linked Postgres; the first visit creates the admin.",
+	"image": "ghcr.io/diced/zipline",
+	"tag": "latest",
+	"containerPort": 3000,
+	"icon": "di:zipline",
+	"tags": ["file-sharing", "screenshots", "sharex", "url-shortener"],
+	"websiteUrl": "https://zipline.diced.sh",
+	"sourceUrl": "https://github.com/diced/zipline",
+	"envVars": {
+		"CORE_SECRET": "{{secret}}",
+		"DATABASE_URL": "postgresql://{{db.POSTGRES_USER}}:{{db.POSTGRES_PASSWORD}}@{{db}}:5432/{{db.POSTGRES_DB}}"
+	},
+	"volumes": ["/zipline/uploads", "/zipline/public", "/zipline/themes"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "postgres"
+		}
+	]
+}

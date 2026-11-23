@@ -1,0 +1,19 @@
+{
+	"$schema": "../schema.json",
+	"name": "Drupal",
+	"description": "Content management for structured, multilingual sites, with thousands of modules. Its installer on the first visit can run on SQLite, or on a Postgres or MySQL you deploy next to it.",
+	"image": "drupal",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:drupal",
+	"tags": ["cms", "website", "php", "multilingual"],
+	"websiteUrl": "https://www.drupal.org",
+	"sourceUrl": "https://github.com/drupal/drupal",
+	"envVars": {},
+	"volumes": [
+		"/var/www/html/modules",
+		"/var/www/html/profiles",
+		"/var/www/html/themes",
+		"/var/www/html/sites"
+	]
+}

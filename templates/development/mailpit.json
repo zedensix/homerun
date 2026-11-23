@@ -1,0 +1,19 @@
+{
+	"$schema": "../schema.json",
+	"name": "Mailpit",
+	"description": "Catches every email your apps send in development, with a web inbox, HTML and spam checks. Point an app at its slug on port 1025 over SMTP; the inbox signs in with the user:password in MP_UI_AUTH.",
+	"image": "axllent/mailpit",
+	"tag": "latest",
+	"containerPort": 8025,
+	"icon": "di:mailpit",
+	"tags": ["email", "smtp", "testing", "development"],
+	"websiteUrl": "https://mailpit.axllent.org",
+	"sourceUrl": "https://github.com/axllent/mailpit",
+	"envVars": {
+		"MP_DATABASE": "/data/mailpit.db",
+		"MP_SMTP_AUTH_ACCEPT_ANY": "true",
+		"MP_SMTP_AUTH_ALLOW_INSECURE": "true",
+		"MP_UI_AUTH": "admin:{{secret}}"
+	},
+	"volumes": ["/data"]
+}

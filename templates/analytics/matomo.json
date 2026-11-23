@@ -1,0 +1,27 @@
+{
+	"$schema": "../schema.json",
+	"name": "Matomo",
+	"description": "Google Analytics alternative that keeps the data on your server: visits, goals, funnels, heatmaps and GDPR tools. Comes with a linked MariaDB; its install wizard picks the database settings up from the environment.",
+	"image": "matomo",
+	"tag": "latest",
+	"containerPort": 80,
+	"icon": "di:matomo",
+	"tags": ["analytics", "web-analytics", "privacy", "gdpr"],
+	"websiteUrl": "https://matomo.org",
+	"sourceUrl": "https://github.com/matomo-org/matomo",
+	"envVars": {
+		"MATOMO_DATABASE_ADAPTER": "mysql",
+		"MATOMO_DATABASE_DBNAME": "{{db.MARIADB_DATABASE}}",
+		"MATOMO_DATABASE_HOST": "{{db}}",
+		"MATOMO_DATABASE_PASSWORD": "{{db.MARIADB_ROOT_PASSWORD}}",
+		"MATOMO_DATABASE_TABLES_PREFIX": "matomo_",
+		"MATOMO_DATABASE_USERNAME": "root"
+	},
+	"volumes": ["/var/www/html"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "mariadb"
+		}
+	]
+}

@@ -1,0 +1,29 @@
+{
+	"$schema": "../schema.json",
+	"name": "Monica",
+	"description": "Personal CRM: remember birthdays, conversations, gifts and the people in your life. Comes with a linked MySQL; the first account you register is yours.",
+	"image": "monica",
+	"tag": "apache",
+	"containerPort": 80,
+	"icon": "di:monica",
+	"tags": ["crm", "contacts", "personal", "relationships"],
+	"websiteUrl": "https://www.monicahq.com",
+	"sourceUrl": "https://github.com/monicahq/monica",
+	"envVars": {
+		"APP_ENV": "production",
+		"APP_KEY": "{{secret:hex32}}",
+		"APP_TRUSTED_PROXIES": "*",
+		"APP_URL": "{{url}}",
+		"DB_DATABASE": "{{db.MYSQL_DATABASE}}",
+		"DB_HOST": "{{db}}",
+		"DB_PASSWORD": "{{db.MYSQL_ROOT_PASSWORD}}",
+		"DB_USERNAME": "root"
+	},
+	"volumes": ["/var/www/html/storage"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "mysql"
+		}
+	]
+}

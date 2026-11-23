@@ -1,0 +1,14 @@
+{
+	"$schema": "../schema.json",
+	"name": "Homer",
+	"description": "Static homepage for your services, configured from one YAML file. Starts with a demo config.yml in its volume; edit that to list your own apps.",
+	"image": "b4bz/homer",
+	"tag": "latest",
+	"containerPort": 8080,
+	"icon": "di:homer",
+	"tags": ["homepage", "startpage", "links", "yaml"],
+	"websiteUrl": null,
+	"sourceUrl": "https://github.com/bastienwirtz/homer",
+	"envVars": {},
+	"volumes": ["/www/assets"]
+}

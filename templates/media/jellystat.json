@@ -1,0 +1,28 @@
+{
+	"$schema": "../schema.json",
+	"name": "Jellystat",
+	"description": "Statistics for Jellyfin: who watched what, when and on which device, with watch history and library breakdowns. Comes with a linked Postgres; connect it to Jellyfin with an API key on first sign-in.",
+	"image": "cyfershepard/jellystat",
+	"tag": "latest",
+	"containerPort": 3000,
+	"icon": "di:jellystat",
+	"tags": ["jellyfin", "statistics", "history", "media"],
+	"websiteUrl": null,
+	"sourceUrl": "https://github.com/CyferShepard/Jellystat",
+	"envVars": {
+		"JWT_SECRET": "{{secret}}",
+		"POSTGRES_DB": "{{db.POSTGRES_DB}}",
+		"POSTGRES_IP": "{{db}}",
+		"POSTGRES_PASSWORD": "{{db.POSTGRES_PASSWORD}}",
+		"POSTGRES_PORT": "5432",
+		"POSTGRES_USER": "{{db.POSTGRES_USER}}",
+		"TZ": "UTC"
+	},
+	"volumes": ["/app/backend/backup-data"],
+	"links": [
+		{
+			"alias": "db",
+			"template": "postgres"
+		}
+	]
+}
