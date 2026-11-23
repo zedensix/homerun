@@ -79,6 +79,7 @@ export function DockerNewtMixin<
 					match.Labels?.[CORE_LABEL] ??
 					"",
 				state: match.State,
+				status: match.Status ?? "",
 			};
 		}
 

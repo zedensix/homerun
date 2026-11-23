@@ -33,6 +33,7 @@ var (
 	}
 	statsSchema = object{
 		"properties": object{
+			"cpuCount":    object{"type": "integer"},
 			"cpuPercent":  object{"type": "number"},
 			"diskPercent": nullableNumber,
 			"diskTotalMb": nullableNumber,
@@ -57,7 +58,7 @@ var (
 			"memUsedMb":  object{"type": "number"},
 		},
 		"required": []string{
-			"cpuPercent", "diskPercent", "diskTotalMb", "diskUsedMb", "gpu",
+			"cpuCount", "cpuPercent", "diskPercent", "diskTotalMb", "diskUsedMb", "gpu",
 			"memPercent", "memTotalMb", "memUsedMb",
 		},
 		"type": "object",

@@ -62,6 +62,7 @@ export interface InfraContainer {
 	project: string;
 	service: string;
 	state: string;
+	status: string;
 }
 
 export interface TraefikUpdateResult {
@@ -248,6 +249,7 @@ export function infraContainersFrom(
 				service:
 					labels["com.docker.compose.service"] ?? labels[CORE_LABEL] ?? "",
 				state: container.State,
+				status: container.Status ?? "",
 			};
 		})
 		.sort((a, b) => a.name.localeCompare(b.name));
@@ -272,6 +274,7 @@ export interface ListedContainer {
 	Names: string[];
 	NetworkSettings?: { Networks?: Record<string, unknown> };
 	State: string;
+	Status?: string;
 }
 
 /** A container inspect body, as much of it as this file reads. */

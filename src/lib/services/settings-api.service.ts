@@ -81,12 +81,16 @@ class SettingsApiServiceClass {
 			authCrossSubdomainCookies: row.authCrossSubdomainCookies,
 			baseDomain: row.baseDomain,
 			buildConcurrency: settings.buildConcurrency,
-			buildCpuLimit: settings.buildCpuLimit
-				? String(settings.buildCpuLimit)
+			buildCpuLimit: settings.buildResources.buildCpuLimit
+				? String(settings.buildResources.buildCpuLimit)
 				: null,
-			buildMemoryLimitMb: settings.buildMemoryLimitMb,
+			buildMemoryLimitMb: settings.buildResources.buildMemoryLimitMb,
 			buildOnHost: settings.buildOnHost,
 			defaultBuildServer: settings.defaultBuildServer,
+			hostBuildCpuLimit: settings.buildResources.hostBuildCpuLimit
+				? String(settings.buildResources.hostBuildCpuLimit)
+				: null,
+			hostBuildMemoryLimitMb: settings.buildResources.hostBuildMemoryLimitMb,
 			dashboardUrl: row.authOrigin,
 			defaultUiMode: row.defaultUiMode ?? DEFAULT_UI_MODE,
 			dockerNetworkName: row.dockerNetworkName,
@@ -268,6 +272,8 @@ class SettingsApiServiceClass {
 				"buildMemoryLimitMb",
 				"buildOnHost",
 				"defaultBuildServer",
+				"hostBuildCpuLimit",
+				"hostBuildMemoryLimitMb",
 			])
 		) {
 			return;
@@ -280,17 +286,25 @@ class SettingsApiServiceClass {
 				),
 				buildCpuLimit:
 					body.buildCpuLimit === undefined
-						? settings.buildCpuLimit
+						? settings.buildResources.buildCpuLimit
 						: Number(body.buildCpuLimit ?? 0),
 				buildMemoryLimitMb:
 					body.buildMemoryLimitMb === undefined
-						? settings.buildMemoryLimitMb
+						? settings.buildResources.buildMemoryLimitMb
 						: (body.buildMemoryLimitMb ?? 0),
 				buildOnHost: pick(body.buildOnHost, settings.buildOnHost),
 				defaultBuildServer: pick(
 					body.defaultBuildServer,
 					settings.defaultBuildServer,
 				),
+				hostBuildCpuLimit:
+					body.hostBuildCpuLimit === undefined
+						? settings.buildResources.hostBuildCpuLimit
+						: Number(body.hostBuildCpuLimit ?? 0),
+				hostBuildMemoryLimitMb:
+					body.hostBuildMemoryLimitMb === undefined
+						? settings.buildResources.hostBuildMemoryLimitMb
+						: (body.hostBuildMemoryLimitMb ?? 0),
 			},
 			userId,
 		);

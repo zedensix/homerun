@@ -5,6 +5,7 @@ import { requirePermission, requireUser } from "#lib/server/remote-auth.js";
 import {
 	type ReleaseStatus,
 	SelfUpdateService,
+	type UpdateReport,
 } from "#lib/services/self-update.service.js";
 import type { UpdatePreflight } from "#lib/services/self-update/preflight.js";
 
@@ -28,6 +29,11 @@ export const checkForUpdates = command(async (): Promise<ReleaseStatus> => {
 export const getUpdatePreflight = query(async (): Promise<UpdatePreflight> => {
 	requirePermission("settings", "read");
 	return await SelfUpdateService.preflight();
+});
+
+export const getUpdateProgress = query(async (): Promise<UpdateReport> => {
+	requirePermission("settings", "read");
+	return await SelfUpdateService.report();
 });
 
 export const startSelfUpdate = command(

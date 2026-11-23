@@ -230,7 +230,7 @@ async function buildSpec(
 		plan.kind === "local-build"
 			? null
 			: await RemoteHostDTO.get(plan.server.hostId),
-		await InstanceSettingsDTO.get(),
+		(await InstanceSettingsDTO.get()).buildResources,
 	);
 	return {
 		...built,

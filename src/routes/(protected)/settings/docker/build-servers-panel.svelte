@@ -11,6 +11,8 @@
 	} from "@zedensix/ui/select";
 	import { untrack } from "svelte";
 
+	import type { BuildCapacity } from "#lib/build-servers.js";
+	import BuildLimitFields from "#lib/components/build-limit-fields.svelte";
 	import CheckBox from "#lib/components/check-box.svelte";
 	import PanelHeader from "#lib/components/panel-header.svelte";
 	import SaveButton from "#lib/components/save-button.svelte";
@@ -23,6 +25,9 @@
 		buildMemoryLimitMb: number | null;
 		buildOnHost: boolean;
 		defaultBuildServer: string;
+		hostBuildCpuLimit: number | null;
+		hostBuildMemoryLimitMb: number | null;
+		hostCapacity: BuildCapacity | null;
 		servers: { id: string; name: string }[];
 	}
 
@@ -32,6 +37,9 @@
 		buildMemoryLimitMb,
 		buildOnHost,
 		defaultBuildServer,
+		hostBuildCpuLimit,
+		hostBuildMemoryLimitMb,
+		hostCapacity,
 		servers,
 	}: Props = $props();
 
@@ -78,39 +86,36 @@
 				finds its server full waits for a free slot.
 			</p>
 		</div>
-		<div class="grid gap-4 md:grid-cols-2">
-			<div>
-				<Label class="mb-1.5" for="buildCpuLimit">Build CPUs per server</Label>
-				<Input
-					id="buildCpuLimit"
-					max={settings.docker.maxBuildCpuLimit}
-					min={0}
-					name="buildCpuLimit"
-					placeholder="No limit"
-					step="0.1"
-					type="number"
-					value={buildCpuLimit ?? ""}
+		<div class="grid gap-6 xl:grid-cols-2">
+			<fieldset class="space-y-2">
+				<legend class="text-sm font-medium">Build resources on this host</legend
+				>
+				<BuildLimitFields
+					capacity={hostCapacity}
+					cpuLimit={hostBuildCpuLimit || null}
+					cpuName="hostBuildCpuLimit"
+					memoryLimitMb={hostBuildMemoryLimitMb || null}
+					memoryName="hostBuildMemoryLimitGb"
 				/>
-			</div>
-			<div>
-				<Label class="mb-1.5" for="buildMemoryLimitMb">
-					Build memory per server (MB)
-				</Label>
-				<Input
-					id="buildMemoryLimitMb"
-					min={0}
-					name="buildMemoryLimitMb"
-					placeholder="No limit"
-					step="1"
-					type="number"
-					value={buildMemoryLimitMb ?? ""}
+			</fieldset>
+			<fieldset class="space-y-2">
+				<legend class="text-sm font-medium">
+					Build resources per remote build server
+				</legend>
+				<BuildLimitFields
+					capacity={null}
+					cpuLimit={buildCpuLimit || null}
+					cpuName="buildCpuLimit"
+					memoryLimitMb={buildMemoryLimitMb || null}
+					memoryName="buildMemoryLimitGb"
 				/>
-			</div>
-			<p class="text-text-subtle text-xs md:col-span-2">
-				What every build running on a server shares at once, so a build can't
+			</fieldset>
+			<p class="text-text-subtle text-xs xl:col-span-2">
+				What every build running on a machine shares at once, so a build can't
 				starve the services next to it. Blank or 0 for no limit, memory at least
-				{settings.docker.minBuildMemoryLimitMb} MB. A build that needs more memory
-				fails instead of swapping. Buildpacks builds (Heroku, Paketo) aren't capped.
+				{settings.docker.minBuildMemoryLimitMb / 1024} GB. A remote server can set
+				its own on its page. A build that needs more memory fails instead of swapping.
+				Buildpacks builds (Heroku, Paketo) aren't capped.
 			</p>
 		</div>
 		<div>

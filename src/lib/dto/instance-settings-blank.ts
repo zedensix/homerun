@@ -11,6 +11,8 @@ export function blankInstanceSettings(id: string, now: Date): InstanceSettings {
 		buildCpuLimit: null,
 		buildMemoryLimitMb: null,
 		buildOnHost: null,
+		hostBuildCpuLimit: null,
+		hostBuildMemoryLimitMb: null,
 		defaultBuildServer: null,
 		authCrossSubdomainCookies: null,
 		authOrigin: null,

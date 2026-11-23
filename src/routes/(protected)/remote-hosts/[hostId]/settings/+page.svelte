@@ -8,6 +8,7 @@
 	import { Textarea } from "@zedensix/ui/textarea";
 	import { onMount } from "svelte";
 
+	import BuildLimitFields from "#lib/components/build-limit-fields.svelte";
 	import ConfirmDialog from "#lib/components/confirm-dialog.svelte";
 	import PanelHeader from "#lib/components/panel-header.svelte";
 	import SaveButton from "#lib/components/save-button.svelte";
@@ -208,40 +209,25 @@
 					>.
 				</p>
 			</div>
-			<div class="grid gap-4 md:grid-cols-2">
-				<div>
-					<Label class="mb-1.5" for="buildCpuLimit">Build CPUs</Label>
-					<Input
-						id="buildCpuLimit"
-						max={settings.docker.maxBuildCpuLimit}
-						min={0}
-						name="buildCpuLimit"
-						placeholder={`${data.buildCpuLimit || "No limit"} (instance default)`}
-						step="0.1"
-						type="number"
-						value={data.host.buildCpuLimit ?? ""}
-					/>
-				</div>
-				<div>
-					<Label class="mb-1.5" for="buildMemoryLimitMb"
-						>Build memory (MB)</Label
-					>
-					<Input
-						id="buildMemoryLimitMb"
-						min={0}
-						name="buildMemoryLimitMb"
-						placeholder={`${data.buildMemoryLimitMb || "No limit"} (instance default)`}
-						step="1"
-						type="number"
-						value={data.host.buildMemoryLimitMb ?? ""}
-					/>
-				</div>
-				<p class="text-xs text-text-subtle md:col-span-2">
+			<fieldset class="space-y-2">
+				<legend class="text-sm font-medium">Build resources</legend>
+				<BuildLimitFields
+					capacity={data.capacity}
+					cpuLimit={data.host.buildCpuLimit}
+					cpuName="buildCpuLimit"
+					memoryLimitMb={data.host.buildMemoryLimitMb}
+					memoryName="buildMemoryLimitGb"
+					placeholder={{
+						cpu: `${data.buildCpuLimit || "No limit"} (instance default)`,
+						memory: `${data.buildMemoryLimitMb ? data.buildMemoryLimitMb / 1024 : "No limit"} (instance default)`,
+					}}
+				/>
+				<p class="text-xs text-text-subtle">
 					What every build on this server shares at once, 0 for no limit, memory
-					at least {settings.docker.minBuildMemoryLimitMb} MB. Leave blank to follow
-					the default. Buildpacks builds (Heroku, Paketo) aren't capped.
+					at least {settings.docker.minBuildMemoryLimitMb / 1024} GB. Leave blank
+					to follow the default. Buildpacks builds (Heroku, Paketo) aren't capped.
 				</p>
-			</div>
+			</fieldset>
 		</form>
 	</section>
 

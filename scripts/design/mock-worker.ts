@@ -70,6 +70,7 @@ function route(request: Request): Response {
 	}
 	if (path === "/v1/host/stats") {
 		return json({
+			cpuCount: 8,
 			cpuPercent: drift(18, 9),
 			diskPercent: 47,
 			diskTotalMb: 937 * 1024,

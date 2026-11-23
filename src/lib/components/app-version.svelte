@@ -3,7 +3,6 @@
 	import { Button } from "@zedensix/ui/button";
 	import * as Dialog from "@zedensix/ui/dialog";
 	import { Spinner } from "@zedensix/ui/spinner";
-	import { onDestroy } from "svelte";
 	import { toast } from "svelte-sonner";
 
 	import Alert from "#lib/components/alert.svelte";
@@ -11,18 +10,19 @@
 	import ConfirmDialog from "#lib/components/confirm-dialog.svelte";
 	import Skeleton from "#lib/components/skeleton.svelte";
 	import UpdateBlockers from "#lib/components/update-blockers.svelte";
+	import UpdateProgress from "#lib/components/update-progress.svelte";
 	import {
 		checkForUpdates,
 		getAppVersion,
 		getReleaseStatus,
 		getUpdatePreflight,
+		getUpdateProgress,
 		startSelfUpdate,
 	} from "#lib/remote/self-update.remote.js";
 	import { toastError } from "#lib/toast.js";
 
 	const { admin }: { admin: boolean } = $props();
 
-	const POLL_MS = 3000;
 	const RELEASE_POLL_MS = 10 * 60 * 1000;
 
 	const version = getAppVersion();
@@ -36,11 +36,22 @@
 	let starting = $state(false);
 	let confirmingForce = $state(false);
 	let updatingTo = $state<string | null>(null);
-	let timer: ReturnType<typeof setInterval> | null = null;
+	let updatingFrom = $state("");
 
 	const preflight = $derived(
 		open && latest && !updatingTo ? getUpdatePreflight() : null,
 	);
+	const runningUpdate = $derived(
+		open && admin && !updatingTo ? getUpdateProgress() : null,
+	);
+
+	$effect(() => {
+		const running = runningUpdate?.current;
+		if (running?.state === "running" && running.version) {
+			updatingFrom = running.currentVersion;
+			updatingTo = running.version;
+		}
+	});
 	const status = $derived(release?.current ?? null);
 	const blockers = $derived(
 		preflight?.current?.supported && !preflight.current.ready
@@ -58,31 +69,12 @@
 		return () => clearInterval(releaseTimer);
 	});
 
-	function waitForNewVersion(from: string | undefined) {
-		timer = setInterval(async () => {
-			try {
-				await version.refresh();
-			} catch {
-				return;
-			}
-			if (version.current && version.current !== from) {
-				location.reload();
-			}
-		}, POLL_MS);
-	}
-
-	onDestroy(() => {
-		if (timer) {
-			clearInterval(timer);
-		}
-	});
-
 	async function updateCallback(force: boolean) {
 		starting = true;
 		try {
 			const result = await startSelfUpdate({ force });
+			updatingFrom = version.current ?? "";
 			updatingTo = result.version;
-			waitForNewVersion(version.current);
 			return result;
 		} catch (error) {
 			await preflight?.refresh();
@@ -168,15 +160,20 @@
 
 {#if admin}
 	<Dialog.Root bind:open>
-		<Dialog.Content>
+		<Dialog.Content class={updatingTo ? "sm:max-w-3xl" : undefined}>
 			<Dialog.Header>
 				<Dialog.Title>
-					{latest
-						? `Update to v${latest.version}`
-						: `Homerun v${version.current ?? ""}`}
+					{updatingTo
+						? `Updating to v${updatingTo}`
+						: latest
+							? `Update to v${latest.version}`
+							: `Homerun v${version.current ?? ""}`}
 				</Dialog.Title>
 				<Dialog.Description>
-					{#if latest}
+					{#if updatingTo}
+						From v{updatingFrom}. Every step, its log and each container update
+						live.
+					{:else if latest}
 						You're on v{version.current}.
 						<a
 							class="text-accent underline"
@@ -195,7 +192,9 @@
 				</Dialog.Description>
 			</Dialog.Header>
 
-			{#if !latest}
+			{#if updatingTo}
+				<UpdateProgress from={updatingFrom} to={updatingTo} />
+			{:else if !latest}
 				{#if release?.error}
 					<Alert title="Couldn't load the update status" variant="warning">
 						Try checking again.
@@ -213,19 +212,6 @@
 						in a moment.
 					</Alert>
 				{/if}
-			{:else if updatingTo}
-				<Alert title="Updating to v{updatingTo}" variant="info">
-					<span class="flex items-center gap-2">
-						<Spinner class="size-3.5" />
-						Pulling the new image and restarting Homerun. This page reloads once it's
-						back.
-					</span>
-					<span class="mt-1 block">
-						Nothing after a few minutes? Check <code
-							>docker logs homerun-updater</code
-						> on the host.
-					</span>
-				</Alert>
 			{:else if preflight}
 				<AsyncBlock
 					errorTitle="Couldn't check whether Homerun can update."

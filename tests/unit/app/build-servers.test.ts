@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+	buildLimitField,
 	buildResourceLimits,
 	buildServerCandidates,
 	buildServerChoice,
@@ -176,17 +177,41 @@ describe("build resource limits", () => {
 		expect(isBuildMemoryLimit(-1)).toBe(false);
 	});
 
-	test("a server's own cap wins over the instance's, 0 included", () => {
-		const instance = { buildCpuLimit: 2, buildMemoryLimitMb: 4096 };
+	test("this host uses its own caps, a remote server its own or the remote defaults", () => {
+		const instance = {
+			buildCpuLimit: 2,
+			buildMemoryLimitMb: 4096,
+			hostBuildCpuLimit: 1,
+			hostBuildMemoryLimitMb: 1024,
+		};
 		expect(buildResourceLimits(null, instance)).toEqual({
-			cpuLimit: 2,
-			memoryLimitMb: 4096,
+			cpuLimit: 1,
+			memoryLimitMb: 1024,
 		});
 		expect(
 			buildResourceLimits(
-				{ buildCpuLimit: 0, buildMemoryLimitMb: null },
+				{ buildCpuLimit: null, buildMemoryLimitMb: null },
 				instance,
 			),
-		).toEqual({ cpuLimit: 0, memoryLimitMb: 4096 });
+		).toEqual({ cpuLimit: 2, memoryLimitMb: 4096 });
+		expect(
+			buildResourceLimits(
+				{ buildCpuLimit: 0, buildMemoryLimitMb: 8192 },
+				instance,
+			),
+		).toEqual({ cpuLimit: 0, memoryLimitMb: 8192 });
+	});
+
+	test("a posted field is null when blank, memory converted from GB to MB", () => {
+		const form = new FormData();
+		form.set("cpus", "1.5");
+		form.set("memory", "2.5");
+		form.set("blank", " ");
+		form.set("junk", "lots");
+		expect(buildLimitField(form, "cpus", "cores")).toBe(1.5);
+		expect(buildLimitField(form, "memory", "gb")).toBe(2560);
+		expect(buildLimitField(form, "blank", "gb")).toBeNull();
+		expect(buildLimitField(form, "missing", "cores")).toBeNull();
+		expect(buildLimitField(form, "junk", "cores")).toBeNaN();
 	});
 });

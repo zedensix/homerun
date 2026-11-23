@@ -7611,6 +7611,8 @@ export interface operations {
 						dockerSocketPath: string | null;
 						gpuHardThreshold: number;
 						gpuSoftThreshold: number;
+						hostBuildCpuLimit: string | null;
+						hostBuildMemoryLimitMb: number;
 						imageScanBlockFixableOnly: boolean;
 						imageScanBlockSeverity:
 							("CRITICAL" | "HIGH" | "MEDIUM" | "LOW") | null;
@@ -7678,9 +7680,9 @@ export interface operations {
 					baseDomain?: string | null;
 					/** @description How many builds each build server runs at once unless it sets its own limit, 0 to 64, 0 for no limit. */
 					buildConcurrency?: number;
-					/** @description The CPU cores every build on a server shares unless the server sets its own, like 1.5. Null or 0 for no limit. Answered as a string. */
+					/** @description The CPU cores every build on a remote build server shares unless the server sets its own, like 1.5. Null or 0 for no limit. Answered as a string. */
 					buildCpuLimit?: (number | string) | null;
-					/** @description The memory in MB every build on a server shares unless the server sets its own, 0 for no limit, else at least 256. */
+					/** @description The memory in MB every build on a remote build server shares unless the server sets its own, 0 for no limit, else at least 256. */
 					buildMemoryLimitMb?: number | null;
 					/** @description Whether git builds may run on this host while build servers are registered. Off sends every build to a build server. */
 					buildOnHost?: boolean;
@@ -7704,6 +7706,10 @@ export interface operations {
 					gpuHardThreshold?: number;
 					/** @description A usage percentage that alerts, 1 to 100. */
 					gpuSoftThreshold?: number;
+					/** @description The CPU cores every build on this host shares, like 1.5. Null or 0 for no limit. Answered as a string. */
+					hostBuildCpuLimit?: (number | string) | null;
+					/** @description The memory in MB every build on this host shares, 0 for no limit, else at least 256. */
+					hostBuildMemoryLimitMb?: number | null;
 					imageScanBlockFixableOnly?: boolean;
 					/** @description Refuse to deploy an image with a finding this severe or worse. Null blocks nothing. */
 					imageScanBlockSeverity?:
@@ -7763,6 +7769,8 @@ export interface operations {
 						dockerSocketPath: string | null;
 						gpuHardThreshold: number;
 						gpuSoftThreshold: number;
+						hostBuildCpuLimit: string | null;
+						hostBuildMemoryLimitMb: number;
 						imageScanBlockFixableOnly: boolean;
 						imageScanBlockSeverity:
 							("CRITICAL" | "HIGH" | "MEDIUM" | "LOW") | null;
@@ -23968,6 +23976,8 @@ export interface operations {
 						project: string;
 						service: string;
 						state: string;
+						/** @description Docker's own summary, like `Up 3 minutes (healthy)`. */
+						status: string;
 					}[];
 				};
 			};

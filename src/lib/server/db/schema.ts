@@ -916,6 +916,8 @@ export const instanceSettings = pgTable("instance_settings", {
 	buildCpuLimit: doublePrecision("build_cpu_limit"),
 	buildMemoryLimitMb: integer("build_memory_limit_mb"),
 	buildOnHost: boolean("build_on_host"),
+	hostBuildCpuLimit: doublePrecision("host_build_cpu_limit"),
+	hostBuildMemoryLimitMb: integer("host_build_memory_limit_mb"),
 	defaultBuildServer: text("default_build_server"),
 	authCrossSubdomainCookies: boolean("auth_cross_subdomain_cookies"),
 	authOrigin: text("auth_origin"),

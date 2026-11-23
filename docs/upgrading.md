@@ -50,10 +50,18 @@ GitHub right away. Once an update is available, the dialog behaves as follows:
   the wall's check while the dashboard container is replaced, and it's only
   removed once the new version answers. Apps deployed before this existed are
   redeployed once after the update to pick it up.
-- The dashboard is down for a few seconds during the switch itself, and the page
-  reloads itself once the new version answers. Jobs that were waiting run once
-  it's back. If something looks wrong, run `docker logs homerun-updater` on the
-  host: every step, and any rollback, is in there.
+- While it runs, the dialog follows it step by step (Prepare, Pull images,
+  Check, Switch, Verify), each with the log lines the update printed and how
+  long it took. Above the steps, a strip pings the dashboard (its round trip in
+  ms) and shows each of Homerun's own containers with Docker's status and the
+  version it runs, so you can watch the app and worker move to the new tag.
+  Closing the dialog doesn't stop anything, and reopening it while an update
+  runs picks the progress back up.
+- The dashboard is down for a few seconds during the switch itself; the ping
+  turns red, the dialog keeps the last log it read and reconnects on its own,
+  then reloads the page once the new version answers. Jobs that were waiting run
+  once it's back. If the update fails, the step that failed is marked with its
+  log open. `docker logs homerun-updater` on the host has the same log.
 
 ## Update anyway
 

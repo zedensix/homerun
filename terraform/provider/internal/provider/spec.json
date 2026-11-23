@@ -1947,13 +1947,25 @@
 					"kind": "string",
 					"name": "buildCpuLimit",
 					"tf": "build_cpu_limit",
-					"description": "The CPU cores every build on a server shares unless the server sets its own, like 1.5. Unset for no limit."
+					"description": "The CPU cores every build on a remote build server shares unless the server sets its own, like 1.5. Unset for no limit."
 				},
 				{
 					"kind": "int",
 					"name": "buildMemoryLimitMb",
 					"tf": "build_memory_limit_mb",
-					"description": "The memory in MB every build on a server shares unless the server sets its own, 0 for no limit."
+					"description": "The memory in MB every build on a remote build server shares unless the server sets its own, 0 for no limit."
+				},
+				{
+					"kind": "string",
+					"name": "hostBuildCpuLimit",
+					"tf": "host_build_cpu_limit",
+					"description": "The CPU cores every build on this host shares, like 1.5. Unset for no limit."
+				},
+				{
+					"kind": "int",
+					"name": "hostBuildMemoryLimitMb",
+					"tf": "host_build_memory_limit_mb",
+					"description": "The memory in MB every build on this host shares, 0 for no limit."
 				},
 				{
 					"kind": "bool",

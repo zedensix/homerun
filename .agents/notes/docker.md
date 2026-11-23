@@ -1681,9 +1681,14 @@ so a deploy waiting on them holds no slot. `defaultBuildServer` is applied in
 git service created without either column set, so previews, environments and
 canaries keep copying their parent's.
 
-**Build CPU and memory caps.** `instance_settings.build_cpu_limit` (cores,
-double) and `build_memory_limit_mb`, overridden per server by the same two
-`remote_host` columns (null follows the instance, 0 is no cap), resolved by
+**Build CPU and memory caps.** A build on this host takes
+`instance_settings.host_build_cpu_limit` (cores, double) and
+`host_build_memory_limit_mb`; one on a remote server takes that server's
+`remote_host.build_cpu_limit`/`build_memory_limit_mb`, else the instance's
+`build_cpu_limit`/`build_memory_limit_mb` remote defaults (null follows, 0 is no
+cap). The forms take memory in GB (`buildLimitField` converts) and show each
+machine's total from its worker's host stats (`cpuCount`, `memTotalMb`;
+`SystemStatsService.getCapacity`, an agent's `/v1/stats`). Resolved by
 `buildResourceLimits` (`#lib/build-servers.js`) in `worker-spec.ts`'s
 `buildSpec` and sent as the build spec's `cpuLimit`/`memoryLimitMb`, on to an
 agent in `POST /v1/build`'s body. `BuilderEnv` turns them into `BUILD_CPU_QUOTA`

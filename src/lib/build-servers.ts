@@ -76,6 +76,42 @@ export function pickBuildServer(
 	return idle[Math.floor(random() * idle.length)]?.id ?? null;
 }
 
+/** The instance's build server defaults, as Settings → Docker saves them; each cap 0 for none. */
+export interface BuildServerSettings {
+	buildConcurrency: number;
+	buildCpuLimit: number;
+	buildMemoryLimitMb: number;
+	buildOnHost: boolean;
+	defaultBuildServer: string;
+	hostBuildCpuLimit: number;
+	hostBuildMemoryLimitMb: number;
+}
+
+export interface BuildCapacity {
+	cpuCount: number | null;
+	memTotalMb: number | null;
+}
+
+const MB_PER_GB = 1024;
+
+/**
+ * A build cap field as a form posts it: null when blank, else the number,
+ * converted from GB to whole MB for a memory field. A value that isn't a
+ * number comes back as NaN for the validators to refuse.
+ */
+export function buildLimitField(
+	formData: FormData,
+	name: string,
+	unit: "cores" | "gb",
+): number | null {
+	const value = String(formData.get(name) ?? "").trim();
+	if (value === "") {
+		return null;
+	}
+	const parsed = Number(value);
+	return unit === "gb" ? Math.round(parsed * MB_PER_GB) : parsed;
+}
+
 export const BUILD_CPU_LIMIT_ERROR = `Build CPUs must be between 0 (no cap) and ${settings.docker.maxBuildCpuLimit} cores.`;
 export const BUILD_MEMORY_LIMIT_ERROR = `Build memory must be 0 (no cap) or at least ${settings.docker.minBuildMemoryLimitMb} MB.`;
 
@@ -97,19 +133,31 @@ export function isBuildMemoryLimit(value: number): boolean {
 }
 
 /**
- * The CPU and memory caps a build gets on a server: the server's own, else
- * the instance's, each 0 when uncapped.
+ * The CPU and memory caps a build gets: this host's own when `server` is
+ * null, else the remote server's, falling back to the instance's remote
+ * defaults. Each 0 when uncapped.
  */
 export function buildResourceLimits(
 	server: {
 		buildCpuLimit: number | null;
 		buildMemoryLimitMb: number | null;
 	} | null,
-	instance: { buildCpuLimit: number; buildMemoryLimitMb: number },
+	instance: {
+		buildCpuLimit: number;
+		buildMemoryLimitMb: number;
+		hostBuildCpuLimit: number;
+		hostBuildMemoryLimitMb: number;
+	},
 ): { cpuLimit: number; memoryLimitMb: number } {
+	if (!server) {
+		return {
+			cpuLimit: instance.hostBuildCpuLimit,
+			memoryLimitMb: instance.hostBuildMemoryLimitMb,
+		};
+	}
 	return {
-		cpuLimit: server?.buildCpuLimit ?? instance.buildCpuLimit,
-		memoryLimitMb: server?.buildMemoryLimitMb ?? instance.buildMemoryLimitMb,
+		cpuLimit: server.buildCpuLimit ?? instance.buildCpuLimit,
+		memoryLimitMb: server.buildMemoryLimitMb ?? instance.buildMemoryLimitMb,
 	};
 }
 

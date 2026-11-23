@@ -96,11 +96,19 @@ export const IAC_SETTINGS_RESOURCES: IacResource[] = [
 			}),
 			setting("buildCpuLimit", "string", {
 				description:
-					"The CPU cores every build on a server shares unless the server sets its own, like 1.5. Unset for no limit.",
+					"The CPU cores every build on a remote build server shares unless the server sets its own, like 1.5. Unset for no limit.",
 			}),
 			setting("buildMemoryLimitMb", "int", {
 				description:
-					"The memory in MB every build on a server shares unless the server sets its own, 0 for no limit.",
+					"The memory in MB every build on a remote build server shares unless the server sets its own, 0 for no limit.",
+			}),
+			setting("hostBuildCpuLimit", "string", {
+				description:
+					"The CPU cores every build on this host shares, like 1.5. Unset for no limit.",
+			}),
+			setting("hostBuildMemoryLimitMb", "int", {
+				description:
+					"The memory in MB every build on this host shares, 0 for no limit.",
 			}),
 			setting("buildOnHost", "bool", {
 				description:

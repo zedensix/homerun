@@ -1,5 +1,6 @@
 import { fail } from "@sveltejs/kit";
 
+import { buildLimitField } from "#lib/build-servers.js";
 import { RemoteHostDTO } from "#lib/dto/remote-host-dto.js";
 import { isBlockSeverity } from "#lib/image-scan.js";
 import { Logger } from "#lib/logger.js";
@@ -10,16 +11,19 @@ import {
 	InstanceSettingsError,
 	InstanceSettingsService,
 } from "#lib/services/instance-settings.service.js";
+import { SystemStatsService } from "#lib/services/system-stats.service.js";
 
 const logger = new Logger("InstanceSettings");
 
 export const load = async () => {
-	const [swarmUnavailableReason, servers] = await Promise.all([
+	const [swarmUnavailableReason, servers, hostCapacity] = await Promise.all([
 		DockerService.swarmModeUnavailableReason(),
 		RemoteHostDTO.listBuildServers(),
+		SystemStatsService.getCapacity(),
 	]);
 	return {
 		buildServers: servers.map((s) => ({ id: s.id, name: s.name })),
+		hostCapacity,
 		swarmUnavailableReason,
 	};
 };
@@ -71,10 +75,16 @@ export const actions = {
 			await InstanceSettingsService.saveBuildServers(
 				{
 					buildConcurrency: Number(formData.get("buildConcurrency")),
-					buildCpuLimit: Number(formData.get("buildCpuLimit")),
-					buildMemoryLimitMb: Number(formData.get("buildMemoryLimitMb")),
+					buildCpuLimit:
+						buildLimitField(formData, "buildCpuLimit", "cores") ?? 0,
+					buildMemoryLimitMb:
+						buildLimitField(formData, "buildMemoryLimitGb", "gb") ?? 0,
 					buildOnHost: formData.get("buildOnHost") === "on",
 					defaultBuildServer: String(formData.get("defaultBuildServer") ?? ""),
+					hostBuildCpuLimit:
+						buildLimitField(formData, "hostBuildCpuLimit", "cores") ?? 0,
+					hostBuildMemoryLimitMb:
+						buildLimitField(formData, "hostBuildMemoryLimitGb", "gb") ?? 0,
 				},
 				locals.user.id,
 			);

@@ -1,3 +1,4 @@
+import type { BuildCapacity } from "#lib/build-servers.js";
 import { WorkerClient } from "#lib/server/worker-client.js";
 
 export interface SystemStats {
@@ -18,6 +19,7 @@ export interface GpuStats {
 
 /** What a worker answers for its host, on `/v1/host/stats` locally and `/v1/stats` in agent mode. */
 export interface HostStats {
+	cpuCount?: number;
 	cpuPercent: number;
 	diskPercent: number | null;
 	diskTotalMb: number | null;
@@ -43,6 +45,14 @@ export function toSystemStats(host: HostStats): SystemStats {
 	};
 }
 
+/** How many CPUs and how much memory a worker's host has, for showing a build cap against it; an agent too old to send its CPU count leaves that null. */
+export function capacityOf(host: HostStats): BuildCapacity {
+	return {
+		cpuCount: host.cpuCount || null,
+		memTotalMb: host.memTotalMb || null,
+	};
+}
+
 /** Host-level (not per-container) CPU/RAM/disk/GPU stats for the dashboard. */
 class SystemStatsServiceClass {
 	/**
@@ -56,6 +66,13 @@ class SystemStatsServiceClass {
 	 */
 	async getSystemStats(): Promise<SystemStats> {
 		return toSystemStats(await WorkerClient.get<HostStats>("/v1/host/stats"));
+	}
+
+	/** This host's CPUs and memory, null when the worker can't be reached. */
+	async getCapacity(): Promise<BuildCapacity | null> {
+		return await WorkerClient.get<HostStats>("/v1/host/stats")
+			.then(capacityOf)
+			.catch(() => null);
 	}
 }
 

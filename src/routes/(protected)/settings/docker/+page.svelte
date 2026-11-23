@@ -233,6 +233,9 @@
 		buildConcurrency={data.settings.buildConcurrency ?? 0}
 		buildCpuLimit={data.settings.buildCpuLimit}
 		buildMemoryLimitMb={data.settings.buildMemoryLimitMb}
+		hostBuildCpuLimit={data.settings.hostBuildCpuLimit}
+		hostBuildMemoryLimitMb={data.settings.hostBuildMemoryLimitMb}
+		hostCapacity={data.hostCapacity}
 		buildOnHost={data.settings.buildOnHost ?? true}
 		defaultBuildServer={data.settings.defaultBuildServer ?? ""}
 		servers={data.buildServers}

@@ -790,6 +790,20 @@ does ship the compose plugin. **Not verified**: a real end-to-end update on an
 installed instance, and the CI changes above (nothing here can run GitHub
 Actions).
 
+**The dialog's live view** (`update-progress.svelte`, `update-pings.svelte`)
+polls `getUpdateProgress` (`SelfUpdateService.report()`: `progress()` split by
+`#lib/self-update-steps.js`'s `updateStepsFrom` on the script's `==>` lines, the
+running version, and `listInfraContainers` plus the updater) every 1.5 s, and
+pings `/api/v1/ready` with a plain `fetch` for the round trip, since that URL
+answers the same on every version and needs no session while a remote function's
+id can change between versions. A failed poll keeps the last report and marks
+the dashboard down; a report naming the target version, or the updater exiting
+0, ends it and reloads after 5 s; a ready ping with the report still failing 15
+s later offers a manual reload. A step's `==>` line in the script is what moves
+the stepper, so renaming one there means updating `STEP_MARKERS` too. Opening
+the dialog while the updater runs (another tab, a reload mid-update) resumes the
+view from `progress().version`.
+
 **The hold is in memory, not a DB column**, on purpose: it lives exactly as long
 as the process that's about to be replaced, so the new container boots with the
 worker running and there's no stale flag to clear if an update dies halfway.

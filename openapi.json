@@ -9063,6 +9063,14 @@
 											"minimum": -9007199254740991,
 											"type": "integer"
 										},
+										"hostBuildCpuLimit": {
+											"type": ["string", "null"]
+										},
+										"hostBuildMemoryLimitMb": {
+											"maximum": 9007199254740991,
+											"minimum": -9007199254740991,
+											"type": "integer"
+										},
 										"imageScanBlockFixableOnly": {
 											"type": "boolean"
 										},
@@ -9144,6 +9152,8 @@
 										"buildMemoryLimitMb",
 										"buildOnHost",
 										"defaultBuildServer",
+										"hostBuildCpuLimit",
+										"hostBuildMemoryLimitMb",
 										"serviceSubdomain",
 										"cpuHardThreshold",
 										"cpuSoftThreshold",
@@ -9272,7 +9282,7 @@
 												"type": "null"
 											}
 										],
-										"description": "The CPU cores every build on a server shares unless the server sets its own, like 1.5. Null or 0 for no limit. Answered as a string."
+										"description": "The CPU cores every build on a remote build server shares unless the server sets its own, like 1.5. Null or 0 for no limit. Answered as a string."
 									},
 									"buildMemoryLimitMb": {
 										"anyOf": [
@@ -9285,7 +9295,7 @@
 												"type": "null"
 											}
 										],
-										"description": "The memory in MB every build on a server shares unless the server sets its own, 0 for no limit, else at least 256."
+										"description": "The memory in MB every build on a remote build server shares unless the server sets its own, 0 for no limit, else at least 256."
 									},
 									"buildOnHost": {
 										"description": "Whether git builds may run on this host while build servers are registered. Off sends every build to a build server.",
@@ -9344,6 +9354,40 @@
 										"maximum": 9007199254740991,
 										"minimum": -9007199254740991,
 										"type": "integer"
+									},
+									"hostBuildCpuLimit": {
+										"anyOf": [
+											{
+												"anyOf": [
+													{
+														"maximum": 256,
+														"minimum": 0,
+														"type": "number"
+													},
+													{
+														"pattern": "^\\d+(\\.\\d+)?$",
+														"type": "string"
+													}
+												]
+											},
+											{
+												"type": "null"
+											}
+										],
+										"description": "The CPU cores every build on this host shares, like 1.5. Null or 0 for no limit. Answered as a string."
+									},
+									"hostBuildMemoryLimitMb": {
+										"anyOf": [
+											{
+												"maximum": 9007199254740991,
+												"minimum": 0,
+												"type": "integer"
+											},
+											{
+												"type": "null"
+											}
+										],
+										"description": "The memory in MB every build on this host shares, 0 for no limit, else at least 256."
 									},
 									"imageScanBlockFixableOnly": {
 										"type": "boolean"
@@ -9508,6 +9552,14 @@
 											"minimum": -9007199254740991,
 											"type": "integer"
 										},
+										"hostBuildCpuLimit": {
+											"type": ["string", "null"]
+										},
+										"hostBuildMemoryLimitMb": {
+											"maximum": 9007199254740991,
+											"minimum": -9007199254740991,
+											"type": "integer"
+										},
 										"imageScanBlockFixableOnly": {
 											"type": "boolean"
 										},
@@ -9589,6 +9641,8 @@
 										"buildMemoryLimitMb",
 										"buildOnHost",
 										"defaultBuildServer",
+										"hostBuildCpuLimit",
+										"hostBuildMemoryLimitMb",
 										"serviceSubdomain",
 										"cpuHardThreshold",
 										"cpuSoftThreshold",
@@ -46222,6 +46276,10 @@
 											},
 											"state": {
 												"type": "string"
+											},
+											"status": {
+												"description": "Docker's own summary, like `Up 3 minutes (healthy)`.",
+												"type": "string"
 											}
 										},
 										"required": [
@@ -46230,7 +46288,8 @@
 											"name",
 											"project",
 											"service",
-											"state"
+											"state",
+											"status"
 										],
 										"type": "object"
 									},

@@ -47,6 +47,8 @@ export const instanceSettingsResponse = z.object({
 	buildMemoryLimitMb: z.number().int(),
 	buildOnHost: z.boolean(),
 	defaultBuildServer: z.string(),
+	hostBuildCpuLimit: nullableText,
+	hostBuildMemoryLimitMb: z.number().int(),
 	serviceSubdomain: nullableText,
 	cpuHardThreshold: percent,
 	cpuSoftThreshold: percent,

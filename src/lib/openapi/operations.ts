@@ -167,6 +167,9 @@ export const infraContainerResponse = z.object({
 	project: z.string(),
 	service: z.string(),
 	state: z.string(),
+	status: z
+		.string()
+		.describe("Docker's own summary, like `Up 3 minutes (healthy)`."),
 });
 
 const cleanupCategory = z.object({

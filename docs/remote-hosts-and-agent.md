@@ -143,16 +143,19 @@ at random between equally busy ones.
   seconds until a slot frees, holding nothing while it waits. After 30 minutes
   without one it fails, and the running version keeps running. Once it has a
   slot it holds it until the deploy finishes.
-- **Build CPUs per server** and **Build memory per server (MB)**, the CPU cores
-  and memory every build running on one server shares, so a build can't starve
-  the services next to it. Blank or 0 for no limit (the default); memory is at
-  least 256 MB. A server overrides either with its own **Build CPUs** and
-  **Build memory** on its `/remote-hosts` page, 0 there for no limit, blank to
-  follow the default. Builds then run in a dedicated BuildKit container capped
-  at those values, so two builds at once split the cap rather than getting it
-  each. Memory is a hard cap with no swap: a build step that needs more fails
-  with `cannot allocate memory` and the running version keeps running. Changing
-  a cap recreates that container before the next build, keeping its layer cache.
+- **Build resources on this host** and **Build resources per remote build
+  server**, the CPUs and memory (in GB) every build running on one machine
+  shares, so a build can't starve the services next to it. Each field shows the
+  machine's own total next to it, like `4 / 16 GB`; a remote server's shows on
+  its page, for a Homerun Agent only, since a bare Docker daemon reports no
+  totals here. Blank or 0 for no limit (the default); memory is at least 0.25
+  GB. A remote server overrides the remote defaults with its own **Build
+  resources** on its `/remote-hosts` page, 0 there for no limit, blank to follow
+  the default. Builds then run in a dedicated BuildKit container capped at those
+  values, so two builds at once split the cap rather than getting it each.
+  Memory is a hard cap with no swap: a build step that needs more fails with
+  `cannot allocate memory` and the running version keeps running. Changing a cap
+  recreates that container before the next build, keeping its layer cache.
   Heroku and Paketo buildpacks builds aren't capped, since `pack` starts its
   build containers on the daemon directly.
 - **Default for new services**, the build server a new git service starts with:
@@ -162,11 +165,12 @@ at random between equally busy ones.
   the least busy build server instead, and the Source picker drops the "Build on
   deploy target" choice. With no build server registered, builds still run here.
 
-The same settings are `buildConcurrency`, `buildCpuLimit`, `buildMemoryLimitMb`,
-`defaultBuildServer` and `buildOnHost` on `/api/v1/instance/settings`,
-`maxConcurrentBuilds`, `buildCpuLimit` and `buildMemoryLimitMb` on a remote host
-and `buildServerAny` on a service. `buildCpuLimit` is answered as a string, like
-`"1.5"`.
+The same settings are `buildConcurrency`, `hostBuildCpuLimit`,
+`hostBuildMemoryLimitMb`, `buildCpuLimit` and `buildMemoryLimitMb` (the remote
+defaults), `defaultBuildServer` and `buildOnHost` on
+`/api/v1/instance/settings`, `maxConcurrentBuilds`, `buildCpuLimit` and
+`buildMemoryLimitMb` on a remote host and `buildServerAny` on a service. The API
+takes memory in MB, and answers a CPU limit as a string, like `"1.5"`.
 
 ## Getting the image back here
 

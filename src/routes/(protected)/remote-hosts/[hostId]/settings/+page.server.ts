@@ -1,24 +1,44 @@
 import { resolve } from "$app/paths";
 import { fail, redirect } from "@sveltejs/kit";
 
+import { buildLimitField } from "#lib/build-servers.js";
 import { InstanceSettingsDTO } from "#lib/dto/instance-settings-dto.js";
 import { RemoteHostDTO } from "#lib/dto/remote-host-dto.js";
 import { Logger } from "#lib/logger.js";
 import { redirectToSignIn } from "#lib/server/sign-in-redirect.js";
+import { AgentClientService } from "#lib/services/agent-client.service.js";
 import {
 	RemoteHostSettingsError,
 	RemoteHostSettingsService,
 } from "#lib/services/remote-host-settings.service.js";
+import {
+	capacityOf,
+	type HostStats,
+} from "#lib/services/system-stats.service.js";
 
 const logger = new Logger("RemoteHosts");
 
-export const load = async ({ parent }) => {
+export const load = async ({ params, parent }) => {
 	await parent();
-	const settings = await InstanceSettingsDTO.get();
+	const [settings, host] = await Promise.all([
+		InstanceSettingsDTO.get(),
+		RemoteHostDTO.get(params.hostId),
+	]);
+	const connection = host?.toAgentConnection();
 	return {
 		buildConcurrency: settings.buildConcurrency,
-		buildCpuLimit: settings.buildCpuLimit,
-		buildMemoryLimitMb: settings.buildMemoryLimitMb,
+		capacity: connection
+			? await AgentClientService.request<HostStats>(
+					connection,
+					"GET",
+					"/v1/stats",
+					{ timeoutMs: 5000 },
+				)
+					.then(capacityOf)
+					.catch(() => null)
+			: null,
+		buildCpuLimit: settings.buildResources.buildCpuLimit,
+		buildMemoryLimitMb: settings.buildResources.buildMemoryLimitMb,
 	};
 };
 
@@ -45,15 +65,18 @@ export const actions = {
 			return fail(404, { error: "Remote host not found." });
 		}
 		const formData = await request.formData();
-		const field = (key: string) => {
-			const value = String(formData.get(key) ?? "").trim();
-			return value === "" ? null : Number(value);
-		};
+		const concurrency = String(
+			formData.get("maxConcurrentBuilds") ?? "",
+		).trim();
 		try {
 			await RemoteHostSettingsService.update(host, {
-				buildCpuLimit: field("buildCpuLimit"),
-				buildMemoryLimitMb: field("buildMemoryLimitMb"),
-				maxConcurrentBuilds: field("maxConcurrentBuilds"),
+				buildCpuLimit: buildLimitField(formData, "buildCpuLimit", "cores"),
+				buildMemoryLimitMb: buildLimitField(
+					formData,
+					"buildMemoryLimitGb",
+					"gb",
+				),
+				maxConcurrentBuilds: concurrency === "" ? null : Number(concurrency),
 			});
 		} catch (err) {
 			if (err instanceof RemoteHostSettingsError) {

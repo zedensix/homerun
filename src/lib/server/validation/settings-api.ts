@@ -41,7 +41,7 @@ export const instanceSettingsApiBody = z.object({
 		.nullable()
 		.optional()
 		.describe(
-			"The CPU cores every build on a server shares unless the server sets its own, like 1.5. Null or 0 for no limit. Answered as a string.",
+			"The CPU cores every build on a remote build server shares unless the server sets its own, like 1.5. Null or 0 for no limit. Answered as a string.",
 		),
 	buildMemoryLimitMb: z
 		.number()
@@ -50,7 +50,7 @@ export const instanceSettingsApiBody = z.object({
 		.nullable()
 		.optional()
 		.describe(
-			`The memory in MB every build on a server shares unless the server sets its own, 0 for no limit, else at least ${settings.docker.minBuildMemoryLimitMb}.`,
+			`The memory in MB every build on a remote build server shares unless the server sets its own, 0 for no limit, else at least ${settings.docker.minBuildMemoryLimitMb}.`,
 		),
 	buildOnHost: z
 		.boolean()
@@ -62,6 +62,25 @@ export const instanceSettingsApiBody = z.object({
 		.optional()
 		.describe(
 			"The build server a new git service starts with: a remote host id, `any` for any free build server, or empty for this host.",
+		),
+	hostBuildCpuLimit: z
+		.union([
+			z.number().min(0).max(settings.docker.maxBuildCpuLimit),
+			text.regex(/^\d+(\.\d+)?$/, "Build CPUs is a number of cores, like 1.5."),
+		])
+		.nullable()
+		.optional()
+		.describe(
+			"The CPU cores every build on this host shares, like 1.5. Null or 0 for no limit. Answered as a string.",
+		),
+	hostBuildMemoryLimitMb: z
+		.number()
+		.int()
+		.min(0)
+		.nullable()
+		.optional()
+		.describe(
+			`The memory in MB every build on this host shares, 0 for no limit, else at least ${settings.docker.minBuildMemoryLimitMb}.`,
 		),
 	serviceSubdomain: nullableText.describe(
 		"One DNS label services' default hostnames go under, <slug>.<serviceSubdomain>.<baseDomain>, like workstations under dev. Null keeps <slug>.<baseDomain>.",

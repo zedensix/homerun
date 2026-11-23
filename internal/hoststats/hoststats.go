@@ -10,6 +10,7 @@ import (
 	"math"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -31,6 +32,7 @@ type GPUStats struct {
 
 // SystemStats is what GET /v1/stats answers on either service.
 type SystemStats struct {
+	CPUCount    int       `json:"cpuCount"`
 	CPUPercent  int       `json:"cpuPercent"`
 	DiskPercent *int      `json:"diskPercent"`
 	DiskTotalMb *int      `json:"diskTotalMb"`
@@ -88,7 +90,7 @@ func RunCommand(name string, args ...string) (string, bool) {
 // worker natively still sees real numbers instead of a panel full of zeroes;
 // a host with neither reads as zero rather than failing.
 func (s *StatsSampler) Sample() SystemStats {
-	stats := SystemStats{}
+	stats := SystemStats{CPUCount: runtime.NumCPU()}
 
 	if sample, ok := s.sampleCPU(); ok {
 		s.mu.Lock()

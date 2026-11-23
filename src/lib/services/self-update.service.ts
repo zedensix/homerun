@@ -6,6 +6,7 @@ import { InstanceSettingsDTO } from "#lib/dto/instance-settings-dto.js";
 import { JobDTO } from "#lib/dto/job-dto.js";
 import { NotificationDTO } from "#lib/dto/notification-dto.js";
 import { Logger } from "#lib/logger.js";
+import { type UpdateStep, updateStepsFrom } from "#lib/self-update-steps.js";
 import { APP_VERSION } from "#lib/server/app-version.js";
 import { isNotFound, WorkerClient } from "#lib/server/worker-client.js";
 import { DockerService } from "#lib/services/docker.service.js";
@@ -69,6 +70,21 @@ export interface UpdateProgress {
 	log: string[];
 	state: "exited" | "none" | "running";
 	version: string | null;
+}
+
+export interface UpdateContainer {
+	image: string;
+	name: string;
+	service: string;
+	state: string;
+	status: string;
+}
+
+/** `UpdateProgress` split into steps, with the version answering right now and the instance's own containers, for the update dialog's live view. */
+export interface UpdateReport extends UpdateProgress {
+	containers: UpdateContainer[];
+	currentVersion: string;
+	steps: UpdateStep[];
 }
 
 export interface ReleaseStatus {
@@ -414,6 +430,48 @@ class SelfUpdateServiceClass {
 			log: log.split(/\r?\n/).filter((line) => line.trim() !== ""),
 			state: running ? "running" : "exited",
 			version: info.Config?.Labels?.["homerun.self-update"] ?? null,
+		};
+	}
+
+	/**
+	 * `progress()` split into the update's steps, plus the version this
+	 * process runs (it changes once the new container answers) and the
+	 * instance's own containers with Docker's status line, the updater's
+	 * included. A container list that can't be read comes back empty rather
+	 * than failing the report.
+	 */
+	async report(): Promise<UpdateReport> {
+		const [progress, infra] = await Promise.all([
+			this.progress(),
+			DockerService.listInfraContainers().catch((err: unknown) => {
+				logger.warn("Couldn't list Homerun's containers for the update", err);
+				return [];
+			}),
+		]);
+		const containers: UpdateContainer[] = infra.map((container) => ({
+			image: container.image,
+			name: container.name,
+			service: container.service,
+			state: container.state,
+			status: container.status,
+		}));
+		if (progress.state !== "none") {
+			containers.push({
+				image: `${UPDATER_IMAGE}:${UPDATER_IMAGE_TAG}`,
+				name: UPDATER_CONTAINER_NAME,
+				service: "updater",
+				state: progress.state,
+				status:
+					progress.state === "running"
+						? "Running the update"
+						: `Exited (${progress.exitCode ?? "?"})`,
+			});
+		}
+		return {
+			...progress,
+			containers,
+			currentVersion: this.currentVersion,
+			steps: updateStepsFrom(progress.log, progress.exitCode),
 		};
 	}
 
