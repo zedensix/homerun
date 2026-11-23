@@ -3,7 +3,7 @@
 	"name": "CyberChef",
 	"description": "The cyber Swiss army knife: encode, decode, hash, encrypt and pick apart data in the browser.",
 	"image": "ghcr.io/gchq/cyberchef",
-	"tag": "11.5",
+	"tag": "11.6",
 	"containerPort": 8080,
 	"icon": "di:cyberchef",
 	"tags": ["encoding", "crypto", "tools", "security"],

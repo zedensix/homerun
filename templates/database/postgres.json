@@ -3,7 +3,7 @@
 	"name": "PostgreSQL",
 	"description": "Relational database. Review the placeholder password before deploying.",
 	"image": "postgres",
-	"tag": "18-alpine",
+	"tag": "19-alpine",
 	"containerPort": 5432,
 	"icon": "di:postgres",
 	"tags": ["sql", "database", "relational", "postgres"],
